@@ -39,19 +39,12 @@ An R coding pipeline for retrieving & summarizing data from [AQUARIUS](https://b
 
 ### Reference
 
-[bcdata package 📦 home page and reference
-guide](https://bcgov.github.io/bcdata/)
+[pgown-snapshot 📦 home page and reference
+guide](https://bcgov.github.io/pgown-snapshot/)
 
 ### Installation
 
-You can install `bcdata` directly from
-[CRAN](https://cran.r-project.org/package=bcdata):
-
-``` r
-install.packages("bcdata")
-```
-
-To install the development version from GitHub, use the
+To install the latest version from GitHub, use the
 [remotes](https://cran.r-project.org/package=remotes) package:
 
 ``` r
