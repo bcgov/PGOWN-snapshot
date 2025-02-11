@@ -22,8 +22,7 @@ coverage](https://codecov.io/gh/bcgov/bcdata/branch/main/graph/badge.svg)](https
 Coding pipeline for the Provincial Groundwater Observation Well Network (PGOWN) snapshot (bi-annual)
 Maintained by the LSDMR team in the EMA branch of the EPD division in the Ministry of Env and Parks
 
-An R package 📦 for searching & retrieving data from the [B.C. Data
-Catalogue](https://catalogue.data.gov.bc.ca).
+An R coding pipeline for retrieving & summarizing data from [AQUARIUS](https://bcenv-enmods.aqsamples.ca/) for the groundwater well network.
 
 - `bcdc_browse()` - Open the catalogue in your default browser
 - `bcdc_search()` - Search records in the catalogue
@@ -35,13 +34,8 @@ Catalogue](https://catalogue.data.gov.bc.ca).
   available through a [Web Feature
   Service](https://en.wikipedia.org/wiki/Web_Feature_Service)
 
-**Note:** The `bcdata` package supports downloading *most* file types,
-including zip archives. It will do its best to identify and read data
-from zip files, however if there are multiple data files in the zip, or
-data files that `bcdata` doesn’t know how to import, it will fail. If
-you encounter a file type in the B.C. Data Catalogue not currently
-supported by `bcdata` please file an
-[issue](https://github.com/bcgov/bcdata/issues/).
+**Note:** The `pgown-snapshot` coding pipeline uses data from the AQUARIUS Time-Series API Client. However, data on that server is password protected. If you do not have verified and functional credentials, you will not be able to use this coding pipeline. If you have credentials but encounter errors in running this code, please file an
+[issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
 
 ### Reference
 
