@@ -28,7 +28,7 @@ An R coding pipeline for retrieving & summarizing data from [AQUARIUS](https://b
 
 The coding flow has three streams of data input/output. 
 
-data: contains reference data needed to run the scripts (data_jb, data_Rc, data_old) that need to be updated for each snapshot, and a folder for storing new data (data_new) generated on running this script.
+data: contains reference data needed to run the scripts (data_jb, data_rc, data_old) that need to be updated for each snapshot, and a folder for storing new data (data_new) generated on running this script.
 
 generated: contains a copy of the figures and tables generated on running this script as well as their underlying data.
 
@@ -43,6 +43,7 @@ rcode: contains the R Markdown file that needs to be run to generate the output 
 2. Go to /coding_flow/data/ and get updated files from relevant stakeholders.
 3. Copy the files in data_new (new in the last run) and paste them in the data_old (old for this new run).
 4. Go to /coding_flow/rcode/ and update the .Renviron file with updated credentials and policy targets' data.
+5. Run the file PGOWN-Snapshot.Rmd in R Markdown. If you encounter errors in running this code, please file an [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
 
 ### Reference
 
