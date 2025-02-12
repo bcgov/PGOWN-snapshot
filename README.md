@@ -43,11 +43,12 @@ rcode: contains the R Markdown file that needs to be run to generate the output 
 3. If you are running the code for the snapshot report due in Feb 2025, rename the folder labeled "2024July" to "2025Feb".
 4. Next, within the folder renamed above, go to /coding_flow/data/ and get updated files from relevant stakeholders for folders data_jb and data_rc.
 5. If you want to simply use the files already in this folder, open subfolder "data_rc" and unzip the file "PGOWN_Grades_Appr.zip" to extract the csv file directly.
-6. Whether use uploaded your own files in step 4 or not, copy the files in "data_new" subfolder (new in the last run) and paste them in "data_old" (old for this new run).
+6. Whether you uploaded your own files in step 4 or not, copy the files in "data_new" subfolder (new in the last run) and paste them in "data_old" (old for this new run).
 7. Go to /coding_flow/rcode/ and update the .Renviron file with updated credentials and policy targets' data.
-8. Open RStudio. Click on File > New Project > Existing Directory > ... (go to the directory PGOWN-snapshot-main; see Step 2)
-9. Open the file PGOWN-Snapshot.Rmd in this project folder using R Markdown. Edit lines 4 and 9 to reflect the latest run of this coding pipeline.
-11. Run the file PGOWN-Snapshot.Rmd using the Knit button. If you encounter errors in running this code, please file an [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
+8. Open RStudio. Click on File > New Project > Existing Directory > ... (go to the directory "PGOWN-snapshot-main"; see Step 2)
+9. Open the file "PGOWN-Snapshot.Rmd" in this project folder using R Markdown. Edit lines 4 and 9 to reflect the latest run of this coding pipeline.
+10. Run the file "PGOWN-Snapshot.Rmd" using the Knit button. If you encounter errors in running this code, please file an [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
+11. An updated report called "PGOWN-Snapshot.html" should be placed in the /coding_flow/rcode/ folder.
 
 ### Reference
 
