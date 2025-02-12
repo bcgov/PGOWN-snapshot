@@ -24,18 +24,22 @@ Maintained by the LSDMR team in the EMA branch of the EPD division in the Minist
 
 An R coding pipeline for retrieving & summarizing data from [AQUARIUS](https://bcenv-enmods.aqsamples.ca/) for the groundwater well network.
 
-- `bcdc_browse()` - Open the catalogue in your default browser
-- `bcdc_search()` - Search records in the catalogue
-- `bcdc_search_facets()` - List catalogue facet search options
-- `bcdc_get_record()` - Print a catalogue record
-- `bcdc_tidy_resources()` - Get a data frame of resources for a record
-- `bcdc_get_data()` - Get catalogue data
-- `bcdc_query_geodata()` - Get & query catalogue geospatial data
-  available through a [Web Feature
-  Service](https://en.wikipedia.org/wiki/Web_Feature_Service)
+### Code structure
 
-**Note:** The `pgown-snapshot` coding pipeline uses data from the AQUARIUS Time-Series API Client. However, data on that server is password protected. If you do not have verified and functional credentials, you will not be able to use this coding pipeline. If you have credentials but encounter errors in running this code, please file an
+The coding flow has three streams of data input/output. 
+
+data: contains reference data needed to run the scripts (data_jb, data_Rc, data_old) that need to be updated for each snapshot, and a folder for storing new data (data_new) generated on running this script.
+
+generated: contains a copy of the figures and tables generated on running this script as well as their underlying data.
+
+rcode: contains the R Markdown file that needs to be run to generate the output report "PGOWN-Snapshot.html". Also contains the script for API calls to the AQUARIUS database as well as an .Renviron that needs to be updated for each snapshot.
+
+**Note:** The `pgown-snapshot` coding pipeline uses data from the AQUARIUS Time-Series API Client. However, data on that server is password protected. If you do not have verified and functional credentials, you will not be able to use this coding pipeline. If you have credentials, update them in the .Renviron file in the folder rcode. Currently they are set to test values and will not work. If you have credentials but encounter errors in running this code, please file an
 [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
+
+### Steps to run the code
+
+1. 
 
 ### Reference
 
