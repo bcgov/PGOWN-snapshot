@@ -39,12 +39,13 @@ rcode: contains the R Markdown file that needs to be run to generate the output 
 ### Installation
 
 1. Download the entire folder structure from GitHub as a ZIP file onto your laptop.
-2. Unzip the file using the ``Extract all" option onto your parent directory. By default, the extracted folder is PGOWN-snapshot-main.
-3. If you are running the code for the snapshot report due in Feb 2026, rename the folder labeled 
-4. Go to /coding_flow/data/ and get updated files from relevant stakeholders.
-5. Copy the files in data_new (new in the last run) and paste them in the data_old (old for this new run).
-6. Go to /coding_flow/rcode/ and update the .Renviron file with updated credentials and policy targets' data.
-7. Run the file PGOWN-Snapshot.Rmd in R Markdown. If you encounter errors in running this code, please file an [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
+2. Unzip the file using the "Extract all" option onto your parent directory. By default, the extracted folder is PGOWN-snapshot-main.
+3. If you are running the code for the snapshot report due in Feb 2025, rename the folder labeled "2024July" to "2025Feb".
+4. Next, within the folder renamed above, go to /coding_flow/data/ and get updated files from relevant stakeholders.
+5. If you want to use the files already in that folder, open data_rc and unzip the file "PGOWN_Grades_Appr.zip" to extract the csv file directly.
+6. Copy the files in data_new (new in the last run) and paste them in the data_old (old for this new run).
+7. Go to /coding_flow/rcode/ and update the .Renviron file with updated credentials and policy targets' data.
+8. Run the file PGOWN-Snapshot.Rmd in R Markdown. If you encounter errors in running this code, please file an [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
 
 ### Reference
 
