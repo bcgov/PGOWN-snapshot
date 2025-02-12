@@ -49,64 +49,20 @@ rcode: contains the R Markdown file that needs to be run to generate the output 
 [pgown-snapshot 📦 home page and reference
 guide](https://bcgov.github.io/pgown-snapshot/)
 
-***Important Note:*** *Your API key is like a password and you must take
-care to keep it private. Do not share it, and be careful to not include
-it in any scripts or accidentally commit it to GitHub.*
-
-You can log in to the catalogue to obtain your API key, then store it as
-an environment variable in your [`.Renviron`
-file](https://rstats.wtf/r-startup.html#renviron). The environment
-variable must be called `BCDC_KEY`, set like this:
-
-    BCDC_KEY=your-api-key
-
-This way, the relevant bcdata functions will read that key and use it to
-authorize your calls to the catalogue, allowing you to access additional
-records that you are authorized to see if you were logged into the
-catalogue web interface. Functions that benefit from this are:
-
-- `bcdc_search()`
-- `bcdc_list()`
-- `bcdc_get_record()`
-- `bcdc_get_data()`
-
 ### Getting Help or Reporting an Issue
 
 To report bugs/issues/feature requests, please file an
-[issue](https://github.com/bcgov/bcdata/issues/).
+[issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
 
 ### How to Contribute
 
 If you would like to contribute to the package, please see our
-[CONTRIBUTING](https://github.com/bcgov/bcdata/blob/master/CONTRIBUTING.md)
+[CONTRIBUTING](https://github.com/bcgov/PGOWN-snapshot/blob/master/CONTRIBUTING.md)
 guidelines.
 
 Please note that this project is released with a [Contributor Code of
 Conduct](https://github.com/bcgov/bcdata/blob/master/CODE_OF_CONDUCT.md).
 By participating in this project you agree to abide by its terms.
-
-### Citation
-
-    To cite package 'bcdata' in publications use:
-
-      Teucher AC, Albers SJ, Hazlitt SL (2021). "bcdata: An R package for
-      searching and retrieving data from the B.C. Data Catalogue." _Journal
-      of Open Source Software_, *6*(61), 2927. doi:10.21105/joss.02927
-      <https://doi.org/10.21105/joss.02927>.
-
-    A BibTeX entry for LaTeX users is
-
-      @Article{,
-        doi = {10.21105/joss.02927},
-        year = {2021},
-        publisher = {The Open Journal},
-        volume = {6},
-        number = {61},
-        pages = {2927},
-        author = {Andrew C. Teucher and Sam J. Albers and Stephanie L. Hazlitt},
-        title = {bcdata: An R package for searching and retrieving data from the B.C. Data Catalogue},
-        journal = {Journal of Open Source Software},
-      }
 
 ### License
 
