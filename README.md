@@ -37,7 +37,7 @@ rcode: contains the R Markdown file that needs to be run to generate the output 
 **Note:** The `pgown-snapshot` coding pipeline uses data from the AQUARIUS Time-Series API Client. However, data on that server is password protected. If you do not have verified and functional credentials, you will not be able to use this coding pipeline. If you have credentials, update them in the .Renviron file in the folder rcode. Currently they are set to test values and will not work. If you have credentials but encounter errors in running this code, please file an
 [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
 
-### Steps to run the code
+### Installation
 
 1. Download the entire folder structure from GitHub onto your laptop.
 2. Go to /coding_flow/data/ and get updated files from relevant stakeholders.
@@ -48,53 +48,6 @@ rcode: contains the R Markdown file that needs to be run to generate the output 
 
 [pgown-snapshot 📦 home page and reference
 guide](https://bcgov.github.io/pgown-snapshot/)
-
-### Installation
-
-To install the latest version from GitHub, use the
-[remotes](https://cran.r-project.org/package=remotes) package:
-
-``` r
-install.packages("remotes")
-
-remotes::install_github("bcgov/bcdata")
-library(bcdata)
-```
-
-### Vignettes
-
-- [Get Started with
-  bcdata](https://bcgov.github.io/bcdata/articles/bcdata.html)
-- [Querying Spatial Data with
-  bcdata](https://bcgov.github.io/bcdata/articles/efficiently-query-spatial-data-in-the-bc-data-catalogue.html)
-- [Exploring Silviculture Data with
-  bcdata](https://bcgov.github.io/bcdata/articles/explore-silviculture-data-using-bcdata.html)
-
-### Methods for `bcdc_promise`
-
-The `bcdc_query_geodata()` returns an object of the class
-`bcdc_promise`. We have written an ever growing list methods for this
-class. You can use these methods directly on a object returned by
-`bcdc_query_geodata()`. Here are all the methods for the `bcdc_promise`
-class:
-
-- `as_tibble`
-- `collect`
-- `filter`
-- `head`
-- `mutate`
-- `names`
-- `print`
-- `select`
-- `show_query`
-- `tail`
-
-### BCDC Authentication
-
-If you are an authorized editor of the B.C. Data Catalogue you may want
-to access records that are not publicly available (e.g., in DRAFT,
-waiting to be published). This can be done by authenticating with the
-catalogue with an API key.
 
 ***Important Note:*** *Your API key is like a password and you must take
 care to keep it private. Do not share it, and be careful to not include
