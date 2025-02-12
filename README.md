@@ -38,11 +38,13 @@ rcode: contains the R Markdown file that needs to be run to generate the output 
 
 ### Installation
 
-1. Download the entire folder structure from GitHub onto your laptop.
-2. Go to /coding_flow/data/ and get updated files from relevant stakeholders.
-3. Copy the files in data_new (new in the last run) and paste them in the data_old (old for this new run).
-4. Go to /coding_flow/rcode/ and update the .Renviron file with updated credentials and policy targets' data.
-5. Run the file PGOWN-Snapshot.Rmd in R Markdown. If you encounter errors in running this code, please file an [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
+1. Download the entire folder structure from GitHub as a ZIP file onto your laptop.
+2. Unzip the file using the ``Extract all" option onto your parent directory. By default, the extracted folder is PGOWN-snapshot-main.
+3. If you are running the code for the snapshot report due in Feb 2026, rename the folder labeled 
+4. Go to /coding_flow/data/ and get updated files from relevant stakeholders.
+5. Copy the files in data_new (new in the last run) and paste them in the data_old (old for this new run).
+6. Go to /coding_flow/rcode/ and update the .Renviron file with updated credentials and policy targets' data.
+7. Run the file PGOWN-Snapshot.Rmd in R Markdown. If you encounter errors in running this code, please file an [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
 
 ### Reference
 
