@@ -39,7 +39,10 @@ rcode: contains the R Markdown file that needs to be run to generate the output 
 
 ### Steps to run the code
 
-1. 
+1. Download the entire folder structure from GitHub onto your laptop.
+2. Go to /coding_flow/data/ and get updated files from relevant stakeholders.
+3. Copy the files in data_new (new in the last run) and paste them in the data_old (old for this new run).
+4. Go to /coding_flow/rcode/ and update the .Renviron file with updated credentials and policy targets' data.
 
 ### Reference
 
