@@ -9,7 +9,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 -->
 
-# pgown-snapshot <a href='https://bcgov.github.io/bcdata/'><img src='man/figures/logo.png' align="right" height="139" /></a>
+# pgown-snapshot <a href='[https://bcgov.github.io/bcdata/](https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/groundwater-wells-aquifers/groundwater-observation-well-network)'><img src='man/figures/logo.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
 
