@@ -19,9 +19,7 @@ See the License for the specific language governing permissions and limitations 
 coverage](https://codecov.io/gh/bcgov/bcdata/branch/main/graph/badge.svg)](https://app.codecov.io/gh/bcgov/bcdata?branch=main)-->
 <!-- badges: end -->
 
-Coding pipeline for the Provincial Groundwater Observation Well Network (PGOWN) snapshot (bi-annual) maintained by the LSDMR team in the EMA branch of the EPD division in the Ministry of Env and Parks
-
-An R coding pipeline for retrieving & summarizing data from [AQUARIUS](https://bcenv-enmods.aqsamples.ca/) for the groundwater well network.
+An R Coding pipeline for retrieving & summarizing data on the Provincial Groundwater Observation Well Network (PGOWN) in the [AQUARIUS](https://bcenv-enmods.aqsamples.ca/) database used to prepare bi-annual snapshots of the network. Pipeline maintained by the LSDMR team (EMA branch of the EPD division) in the Ministry of Env and Parks, Govt. of British Columbia.
 
 ### Code structure
 
