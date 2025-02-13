@@ -42,7 +42,7 @@ rcode: contains the R Markdown file that needs to be run to generate the output 
 4. Next, within the folder renamed above, go to /coding_flow/data/ and get updated files from relevant stakeholders for folders data_jb and data_rc.
 5. If you want to simply use the files already in this folder, open subfolder "data_rc" and unzip the file "PGOWN_Grades_Appr.zip" and "Extract here" the csv file.
 6. Snapshot reports are cumulative, and contain data that iteratively gets updated after every report. The updated data is stored in "data_new". For every new snapshot report, replace the files in "data_old" by copying files from "data_new".
-7. Update the .Renviron file in the root directory (PGOWN-snapshot main) with updated credentials and policy targets' data.
+7. Update the .Renviron file in the root directory (PGOWN-snapshot main) with updated API credentials and policy targets' data. This update would include changing the folder corresponding to the snapshot period (see Step 3), as well dates of current and previous reports, start and end dates for studying data gaps in the PGOWN network, as well as specific policy targets and the years in which they were announced. 
 8. Open RStudio. Click on File > New Project > Existing Directory > ... (go to the root directory "PGOWN-snapshot-main"; see Step 2).
 9. Open the file "PGOWN-Snapshot.Rmd" in this project folder using R Markdown. Edit lines 4 and 9 to reflect the latest run of this coding pipeline.
 10. Run the file "PGOWN-Snapshot.Rmd" using the Knit button. If you encounter errors in running this code, please file an [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
