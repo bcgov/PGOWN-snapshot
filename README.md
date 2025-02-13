@@ -39,7 +39,7 @@ rcode: contains the R Markdown file that needs to be run to generate the output 
 ### Installation
 
 1. Download the entire folder structure from GitHub as a ZIP file onto your laptop.
-2. Unzip the file using the "Extract all" option onto your parent directory. By default, the extracted folder is the root directory (PGOWN-snapshot-main).
+2. Unzip the file using the "Extract here" option onto your parent directory. By default, the extracted folder is the root directory (PGOWN-snapshot-main).
 3. Rename the folder titled "2024July". If you are generating a snapshot report due in Feb 2025, rename this folder to "2025Feb".
 4. Next, within the folder renamed above, go to /coding_flow/data/ and get updated files from relevant stakeholders for folders data_jb and data_rc.
 5. If you want to simply use the files already in this folder, open subfolder "data_rc" and unzip the file "PGOWN_Grades_Appr.zip" to extract the csv file to a subfolder PGOWN_Grades_Appr/.
