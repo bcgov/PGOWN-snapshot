@@ -3,9 +3,9 @@ api_username="test"
 report_folder="/2024July"
 date_of_current_report="2025-02-04"
 date_of_previous_report="2024-07-04"
+#details on the period for which data gaps in the PGOWN network will be reported
 date_of_data_gap_start="2024-01-01"
 date_of_data_gap_end="2024-06-30"
-active_wells="237"
 #% data performance target by default
 target_data_default="90"
 # year when data approval target was set
