@@ -21,10 +21,6 @@ coverage](https://codecov.io/gh/bcgov/bcdata/branch/main/graph/badge.svg)](https
 
 An R Coding pipeline for retrieving & summarizing data on the [Provincial Groundwater Observation Well Network (PGOWN)](https://www2.gov.bc.ca/gov/content?id=B03D0994BB5C4F98B6F7D4FD8610C836) in the [real-time water data](https://www2.gov.bc.ca/gov/content?id=39A675506AE54C4CB240849338B7C8D8) database used to prepare bi-annual snapshots of the network and its performance. This reporting too and data pipeline maintained by the Data Management unit of the LSDMR section (EMAB branch of the EPD division) in the Ministry of Env and Parks, Govt. of British Columbia.
 
-### Jeremy's Edit
-
-Jeremy has edited the readme right here!
-
 ### Code structure
 
 The coding flow has three streams of data input/output. 
