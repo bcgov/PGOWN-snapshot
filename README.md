@@ -25,6 +25,8 @@ An R Coding pipeline for retrieving & summarizing data on the [Provincial Ground
 
 The coding flow has three streams of data input/output. 
 
+This is a new edit.
+
 data: contains reference data needed to run the scripts (data_jb, data_rc, data_old) that need to be updated for each snapshot, and a folder for storing new data (data_new) generated on running this script.
 
 generated: contains a copy of the figures and tables generated on running this script as well as their underlying data.
