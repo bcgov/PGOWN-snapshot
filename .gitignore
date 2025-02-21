@@ -1,0 +1,10 @@
+# History files
+.Rhistory
+.Rapp.history
+
+# Session Data files
+.RData
+.RDataTmp
+
+# time series client code from AQI
+2025Feb/coding_flow/rcode/timeseries_client.R
