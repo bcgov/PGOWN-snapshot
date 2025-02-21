@@ -31,7 +31,7 @@ generated: contains a copy of the figures and tables generated on running this s
 
 rcode: contains the R Markdown file that needs to be run to generate the output report "PGOWN-Snapshot.html". Also contains the script for API calls to the AQUARIUS database as well as an .Renviron that needs to be updated for each snapshot.Because the script pulls data from the production version of the databse it does take several minutes to complete. 
 
-**Note:** The `pgown-snapshot` coding pipeline uses data from the AQUARIUS Time-Series API Client. However, data on that server is password protected. If you do not have verified and functional credentials, you will not be able to use this coding pipeline. If you have credentials, update them in the .Renviron file in the folder rcode. Currently they are set to test values and will not work. If you have credentials but encounter errors in running this code, please file an
+**Note:** The `pgown-snapshot` coding pipeline uses data from the AQUARIUS Time-Series API Client, utalizing the timeseries_clinet.R file writtin and maintained by [Aquatic Informatics](https://github.com/AquaticInformatics) which can be found in their repo [here](https://github.com/AquaticInformatics/examples/blob/fa417675042ea1f1d08358f2c42244e7c4baac23/TimeSeries/PublicApis/R/timeseries_client.R). Data on the AQTS server is password protected. If you do not have verified and functional credentials, you will not be able to use this coding pipeline. If you have credentials, update them in the .Renviron file in the folder rcode. Currently they are set to test values and will not work. If you have credentials but encounter errors in running this code, please file an
 [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
 
 ### Installation
