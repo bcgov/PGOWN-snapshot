@@ -61,7 +61,7 @@ server <- function(input, output, session) {
     write_yaml(report_parameter_list, report_parameter_list_file)
     
     # Render RMarkdown file with parameters
-    output_file <- str_c(here(), input$report_folder, "/report.html")
+    output_file <- str_c(here(), input$report_folder, "/PGOWN-Snapshot.html")
     render(str_c(here(), input$report_folder, "/coding_flow/rcode/PGOWN-Snapshot.Rmd"), output_format = "html_document", output_file = output_file, 
            knit_root_dir = here())
     
