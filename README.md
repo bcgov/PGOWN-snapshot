@@ -46,7 +46,7 @@ rcode: contains the R Markdown file that needs to be run to generate the output 
 8. Update the .Renviron file in the root directory (PGOWN-snapshot main) with updated API credentials and policy targets' data. This update would include changing the folder corresponding to the snapshot period (see Step 3), as well as dates of current and previous reports, start and end dates for studying data gaps, as well as specific policy targets and the years in which they were announced. 
 9. Open RStudio. Click on File > New Project > Existing Directory > ... (go to the root directory "PGOWN-snapshot-main"; see Step 2).
 10. Open the file "PGOWN-Snapshot.Rmd" in this project folder using R Markdown. Edit lines 4 and 9 to reflect the latest run of this coding pipeline.
-11. Click on Session > Set Working Directory > To Project Directory.
+11. Click on Knit options > Knit Directory > Project Directory.
 12. Run the file "PGOWN-Snapshot.Rmd" using the Knit button. If you encounter errors in running this code, please file an [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
 13. An updated report called "PGOWN-Snapshot.html" should be placed in the /coding_flow/rcode/ folder.
 
