@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and limitations 
 coverage](https://codecov.io/gh/bcgov/bcdata/branch/main/graph/badge.svg)](https://app.codecov.io/gh/bcgov/bcdata?branch=main)-->
 <!-- badges: end -->
 
-An R Coding pipeline for retrieving & summarizing data on the Provincial Groundwater Observation Well Network (PGOWN) in the [AQUARIUS](https://bcenv-enmods.aqsamples.ca/) database used to prepare bi-annual snapshots of the network. Pipeline maintained by the LSDMR team (EMA branch of the EPD division) in the Ministry of Env and Parks, Govt. of British Columbia.
+An R Coding pipeline for retrieving & summarizing data on the [Provincial Groundwater Observation Well Network (PGOWN)](https://www2.gov.bc.ca/gov/content?id=B03D0994BB5C4F98B6F7D4FD8610C836) in the [real-time water data](https://www2.gov.bc.ca/gov/content?id=39A675506AE54C4CB240849338B7C8D8) database used to prepare bi-annual snapshots of the network and its performance. This reporting too and data pipeline maintained by the Data Management unit of the LSDMR section (EMAB branch of the EPD division) in the Ministry of Env and Parks, Govt. of British Columbia.
 
 ### Code structure
 
@@ -29,14 +29,14 @@ data: contains reference data needed to run the scripts (data_jb, data_rc, data_
 
 generated: contains a copy of the figures and tables generated on running this script as well as their underlying data.
 
-rcode: contains the R Markdown file that needs to be run to generate the output report "PGOWN-Snapshot.html". Also contains the script for API calls to the AQUARIUS database as well as an .Renviron that needs to be updated for each snapshot.
+rcode: contains the R Markdown file that needs to be run to generate the output report "PGOWN-Snapshot.html". Also contains the script for API calls to the AQUARIUS database as well as an .Renviron that needs to be updated for each snapshot.Because the script pulls data from the production version of the databse it does take several minutes to complete. 
 
-**Note:** The `pgown-snapshot` coding pipeline uses data from the AQUARIUS Time-Series API Client. However, data on that server is password protected. If you do not have verified and functional credentials, you will not be able to use this coding pipeline. If you have credentials, update them in the .Renviron file in the folder rcode. Currently they are set to test values and will not work. If you have credentials but encounter errors in running this code, please file an
+**Note:** The `pgown-snapshot` coding pipeline uses data from the AQUARIUS Time-Series API Client, utalizing the timeseries_clinet.R file writtin and maintained by [Aquatic Informatics](https://github.com/AquaticInformatics) which can be found in their repo [here](https://github.com/AquaticInformatics/examples/blob/fa417675042ea1f1d08358f2c42244e7c4baac23/TimeSeries/PublicApis/R/timeseries_client.R). Data on the AQTS server is password protected. If you do not have verified and functional credentials, you will not be able to use this coding pipeline. If you have credentials, update them in the .Renviron file in the folder rcode. Currently they are set to test values and will not work. If you have credentials but encounter errors in running this code, please file an
 [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
 
 ### Installation
 
-1. Download the entire folder structure from GitHub as a ZIP file onto your laptop.
+1. Download the entire folder structure from GitHub as a ZIP file to your local machine or use github desktop.
 2. Unzip the file using the "Extract Here" option onto your parent directory. By default, the extracted folder is the root directory (PGOWN-snapshot-main).
 3. Rename the folder titled "2024July". If you are generating a snapshot report due in Feb 2025, rename this folder to "2025Feb".
 4. Next, within the folder renamed above, go to /coding_flow/data/ and get updated files from relevant stakeholders for folders data_jb and data_rc.
