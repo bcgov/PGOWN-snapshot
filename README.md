@@ -31,7 +31,7 @@ generated: contains a copy of the figures and tables generated on running this s
 
 rcode: contains the R Markdown file that needs to be run to generate the output report "PGOWN-Snapshot.html". Also contains the script for API calls to the AQUARIUS database as well as an .Renviron that needs to be updated for each snapshot.Because the script pulls data from the production version of the databse it does take several minutes to complete. 
 
-**Note:** The `pgown-snapshot` coding pipeline uses data from the AQUARIUS Time-Series API Client, utalizing the timeseries_clinet.R file writtin and maintained by [Aquatic Informatics](https://github.com/AquaticInformatics) which can be found in their repo [here](https://github.com/AquaticInformatics/examples/blob/fa417675042ea1f1d08358f2c42244e7c4baac23/TimeSeries/PublicApis/R/timeseries_client.R). Data on the AQTS server is password protected. If you do not have verified and functional credentials, you will not be able to use this coding pipeline. If you have credentials, update them in the .Renviron file in the folder rcode. Currently they are set to test values and will not work. If you have credentials but encounter errors in running this code, please file an
+**Note:** The `pgown-snapshot` coding pipeline uses data from the AQUARIUS Time-Series API Client, utilizing the timeseries_client.R file written and maintained by [Aquatic Informatics](https://github.com/AquaticInformatics) which can be found in their repo [here](https://github.com/AquaticInformatics/examples/blob/fa417675042ea1f1d08358f2c42244e7c4baac23/TimeSeries/PublicApis/R/timeseries_client.R). Data on the AQTS server is password protected. If you do not have verified and functional credentials, you will not be able to use this coding pipeline. If you have credentials, update them in the .Renviron file in the folder rcode. Currently they are set to test values and will not work. If you have credentials but encounter errors in running this code, please file an
 [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
 
 ### Installation
@@ -42,11 +42,12 @@ rcode: contains the R Markdown file that needs to be run to generate the output 
 4. Next, within the folder renamed above, go to /coding_flow/data/ and get updated files from relevant stakeholders for folders data_jb and data_rc.
 5. If you want to simply use the files already in this folder, open subfolder "data_rc" and unzip the file "PGOWN_Grades_Appr.zip" and "Extract Here" the csv file.
 6. Snapshot reports are cumulative, and contain data that iteratively gets updated after every report. The updated data is stored in "data_new". For every new snapshot report, replace the files in "data_old" by copying files from "data_new".
-7. Update the .Renviron file in the root directory (PGOWN-snapshot main) with updated API credentials and policy targets' data. This update would include changing the folder corresponding to the snapshot period (see Step 3), as well as dates of current and previous reports, start and end dates for studying data gaps, as well as specific policy targets and the years in which they were announced. 
-8. Open RStudio. Click on File > New Project > Existing Directory > ... (go to the root directory "PGOWN-snapshot-main"; see Step 2).
-9. Open the file "PGOWN-Snapshot.Rmd" in this project folder using R Markdown. Edit lines 4 and 9 to reflect the latest run of this coding pipeline.
-10. Run the file "PGOWN-Snapshot.Rmd" using the Knit button. If you encounter errors in running this code, please file an [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
-11. An updated report called "PGOWN-Snapshot.html" should be placed in the /coding_flow/rcode/ folder.
+7. Download the timeseries_client.R file written and maintained by [Aquatic Informatics](https://github.com/AquaticInformatics) which can be found in their repo [here](https://github.com/AquaticInformatics/examples/blob/fa417675042ea1f1d08358f2c42244e7c4baac23/TimeSeries/PublicApis/R/timeseries_client.R). Copy this file to the subfolder "rcode".
+8. Update the .Renviron file in the root directory (PGOWN-snapshot main) with updated API credentials and policy targets' data. This update would include changing the folder corresponding to the snapshot period (see Step 3), as well as dates of current and previous reports, start and end dates for studying data gaps, as well as specific policy targets and the years in which they were announced. 
+9. Open RStudio. Click on File > New Project > Existing Directory > ... (go to the root directory "PGOWN-snapshot-main"; see Step 2).
+10. Open the file "PGOWN-Snapshot.Rmd" in this project folder using R Markdown. Edit lines 4 and 9 to reflect the latest run of this coding pipeline.
+11. Run the file "PGOWN-Snapshot.Rmd" using the Knit button. If you encounter errors in running this code, please file an [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
+12. An updated report called "PGOWN-Snapshot.html" should be placed in the /coding_flow/rcode/ folder.
 
 ### Reference
 
