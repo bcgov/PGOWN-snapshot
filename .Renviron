@@ -1,26 +1,2 @@
 api_password="test"
 api_username="test"
-report_folder="/2024July"
-date_of_current_report="2025-02-04"
-date_of_previous_report="2024-07-04"
-#details on the period for which data gaps in the PGOWN network will be reported
-date_of_data_gap_start="2024-01-01"
-date_of_data_gap_end="2024-06-30"
-#% data performance target by default
-target_data_default="90"
-# year when data approval target was set
-target_data_approval_year="2024"
-# % data approval target set
-target_data_approval="90"
-# year when data graded target was set
-target_data_graded_year="2024"
-# % data gap target set
-target_data_gap_percent="15"
-#year when data gap target was set
-target_data_gap_year="2024"
-# days threshold used to define telemetry station as offline
-target_days_telemetry="30"
-# target for percent telemetry stations offline
-target_telemetry_stn_offline="10"
-# year when telemetry target was set
-target_days_telemetry_year="2024"
