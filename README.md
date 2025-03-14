@@ -43,12 +43,11 @@ rcode: contains the R Markdown file that needs to be run to generate the output 
 5. If you want to simply use the files already in this folder, open subfolder "data_rc" and unzip the file "PGOWN_Grades_Appr.zip" and "Extract Here" the csv file.
 6. Snapshot reports are cumulative, and contain data that iteratively gets updated after every report. The updated data is stored in "data_new". For every new snapshot report, replace the files in "data_old" by copying files from "data_new".
 7. Download the timeseries_client.R file written and maintained by [Aquatic Informatics](https://github.com/AquaticInformatics) which can be found in their repo [here](https://github.com/AquaticInformatics/examples/blob/fa417675042ea1f1d08358f2c42244e7c4baac23/TimeSeries/PublicApis/R/timeseries_client.R). Copy this file to the subfolder "rcode".
-8. Update the .Renviron file in the root directory (PGOWN-snapshot main) with updated API credentials and policy targets' data. This update would include changing the folder corresponding to the snapshot period (see Step 3), as well as dates of current and previous reports, start and end dates for studying data gaps, as well as specific policy targets and the years in which they were announced. 
-9. Open RStudio. Click on File > New Project > Existing Directory > ... (go to the root directory "PGOWN-snapshot-main"; see Step 2).
-10. Open the file "PGOWN-Snapshot.Rmd" in this project folder using R Markdown. Edit lines 4 and 9 to reflect the latest run of this coding pipeline.
-11. Click on Knit options > Knit Directory > Project Directory.
-12. Run the file "PGOWN-Snapshot.Rmd" using the Knit button. If you encounter errors in running this code, please file an [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
-13. An updated report called "PGOWN-Snapshot.html" should be placed in the /coding_flow/rcode/ folder.
+8. Update the .Renviron file in the root directory (PGOWN-snapshot main) with updated API credentials.
+9. Open the file "app.R" in the folder in the R environment. This is an R Shiny app so you would need to have the "shiny" package installed before running it.
+10. Run the app and give it updated values including for changing the folder corresponding to the snapshot period (see Step 3), as well as dates of current and previous reports, start and end dates for studying data gaps, as well as specific policy targets and the years in which they were announced.
+11. If you encounter errors in running this code, please file an [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
+12. An updated report called "PGOWN-Snapshot.html" should be placed in the folder renamed in Step 3.
 
 ### Reference
 
