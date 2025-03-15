@@ -1,12 +1,14 @@
 ---
 #Process PGOWN Wells Snapshot
 #Compiled RMarkdown file to generate HTML report
-#Last updated: 2024 July
 #Q:? Do we need to remove these identification details below?
 #Written by: KJ
 #Now maintained by: BS
 title: "Provincial Groundwater Observation Well Network (PGOWN)"
-subtitle: "Snapshot Report: July 2024"
+params:
+  set_subtitle: test
+subtitle: "`r params$set_subtitle`"
+#subtitle: "Snapshot Report: Feb 2025"
 output: html_document
 ---
 

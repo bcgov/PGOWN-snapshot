@@ -11,6 +11,7 @@ ui <- fluidPage(
     sidebarPanel(
       
       textInput("report_folder", "Name of new report folder:", value = "/2024July"),
+      textInput("snapshot_name", "Name of new snapshot:", value = "July 2024"),
       textInput("date_of_current_report", "Date analysis is being conducted:", value = "2025-02-04"),
       textInput("date_of_previous_report", "Date analysis was last conducted:", value = "2024-07-04"),
       textInput("date_of_data_gap_start", "Starting date to study data gaps:", value = "2024-01-01"),
@@ -41,6 +42,7 @@ server <- function(input, output, session) {
     # Create a list of parameters
     report_parameter_list <- list(
       report_folder = input$report_folder,
+      snapshot_name = input$snapshot_name,
       date_of_current_report = input$date_of_current_report,
       date_of_previous_report = input$date_of_previous_report,
       date_of_data_gap_start = input$date_of_data_gap_start,
@@ -62,8 +64,7 @@ server <- function(input, output, session) {
     
     # Render RMarkdown file with parameters
     output_file <- str_c(here(), input$report_folder, "/PGOWN-Snapshot.html")
-    render(str_c(here(), input$report_folder, "/coding_flow/rcode/PGOWN-Snapshot.Rmd"), output_format = "html_document", output_file = output_file, 
-           knit_root_dir = here())
+    render(str_c(here(), input$report_folder, "/coding_flow/rcode/PGOWN-Snapshot-test.Rmd"), output_format = "html_document", output_file = output_file, params = list(set_subtitle= str_c("Snapshot Report: ", report_parameter_list$snapshot_name)), envir = new.env(parent = globalenv()), knit_root_dir = here())
     
     stopApp()
     
