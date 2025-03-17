@@ -64,7 +64,7 @@ server <- function(input, output, session) {
     
     # Render RMarkdown file with parameters
     output_file <- str_c(here(), input$report_folder, "/PGOWN-Snapshot.html")
-    render(str_c(here(), input$report_folder, "/coding_flow/rcode/PGOWN-Snapshot-test.Rmd"), output_format = "html_document", output_file = output_file, params = list(set_subtitle= str_c("Snapshot Report: ", report_parameter_list$snapshot_name)), envir = new.env(parent = globalenv()), knit_root_dir = here())
+    render(str_c(here(), input$report_folder, "/coding_flow/rcode/PGOWN-Snapshot.Rmd"), output_format = "html_document", output_file = output_file, params = list(set_subtitle= str_c("Snapshot Report: ", report_parameter_list$snapshot_name)), envir = new.env(parent = globalenv()), knit_root_dir = here())
     
     stopApp()
     

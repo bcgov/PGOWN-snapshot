@@ -8,7 +8,6 @@ title: "Provincial Groundwater Observation Well Network (PGOWN)"
 params:
   set_subtitle: test
 subtitle: "`r params$set_subtitle`"
-#subtitle: "Snapshot Report: Feb 2025"
 output: html_document
 ---
 
@@ -45,45 +44,45 @@ library(here)
 
 #have to save .Renviron in the home directory where the project is placed; not the working dir
 readRenviron(".Renviron")
-params <- read_yaml("report_parameter_list.yaml")
+parameters <- read_yaml("report_parameter_list.yaml")
 
 #knitr::opts_knit$set(root.dir = str_c(here::here(), Sys.getenv("report_folder")))
 #knitr::opts_knit$set(root.dir = str_c(here(), report_folder))
 
-report_folder = params$report_folder
+report_folder = parameters$report_folder
 
 #date_of_current_report = Sys.getenv("date_of_current_report")
-date_of_current_report = params$date_of_current_report
+date_of_current_report = parameters$date_of_current_report
 
 #date_of_previous_report = Sys.getenv("date_of_previous_report")
-date_of_previous_report = params$date_of_previous_report
+date_of_previous_report = parameters$date_of_previous_report
 
 #date_of_data_gap_start = Sys.getenv("date_of_data_gap_start")
-date_of_data_gap_start = params$date_of_data_gap_start
+date_of_data_gap_start = parameters$date_of_data_gap_start
 
 #date_of_data_gap_end = Sys.getenv("date_of_data_gap_end")
-date_of_data_gap_end = params$date_of_data_gap_end
+date_of_data_gap_end = parameters$date_of_data_gap_end
 
 #% data performance target by default
 #target_data_default = as.numeric(Sys.getenv("target_data_default"))
-target_data_default = as.numeric(params$target_data_default)
+target_data_default = as.numeric(parameters$target_data_default)
 
 # year when data approval target was set
 #target_data_approval_year = Sys.getenv("target_data_approval_year")
-target_data_approval_year = params$target_data_approval_year
+target_data_approval_year = parameters$target_data_approval_year
 
 
 # % data approval target set
 #target_data_approval = as.numeric(Sys.getenv("target_data_approval"))
-target_data_approval = as.numeric(params$target_data_approval)
+target_data_approval = as.numeric(parameters$target_data_approval)
 
 # year when data graded target was set
 #target_data_graded_year = Sys.getenv("target_data_graded_year")
-target_data_graded_year = params$target_data_graded_year
+target_data_graded_year = parameters$target_data_graded_year
 
 # % data gap target set
 #target_data_gap_percent = as.numeric(Sys.getenv("target_data_gap_percent"))
-target_data_gap_percent = as.numeric(params$target_data_gap_percent)
+target_data_gap_percent = as.numeric(parameters$target_data_gap_percent)
 
 
 #% days times number of days in 6 months
@@ -91,21 +90,21 @@ target_data_gap = 0.01*target_data_gap_percent*6*30
 
 #year when data gap target was set
 #target_data_gap_year = Sys.getenv("target_data_gap_year")
-target_data_gap_year = params$target_data_gap_year
+target_data_gap_year = parameters$target_data_gap_year
 
 # days threshold used to define telemetry station as offline
 #target_days_telemetry = as.numeric(Sys.getenv("target_days_telemetry"))
-target_days_telemetry = as.numeric(params$target_days_telemetry)
+target_days_telemetry = as.numeric(parameters$target_days_telemetry)
 
 
 # target for percent telemetry stations offline
 #target_telemetry_stn_offline = as.numeric(Sys.getenv("target_telemetry_stn_offline"))
-target_telemetry_stn_offline = as.numeric(params$target_telemetry_stn_offline)
+target_telemetry_stn_offline = as.numeric(parameters$target_telemetry_stn_offline)
 
 
 # year when telemetry target was set
 #target_days_telemetry_year = Sys.getenv("target_days_telemetry_year")
-target_days_telemetry_year = params$target_days_telemetry_year
+target_days_telemetry_year = parameters$target_days_telemetry_year
 
 ```
 
