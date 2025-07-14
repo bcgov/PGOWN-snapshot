@@ -25,7 +25,7 @@ An R Coding pipeline for retrieving & summarizing data on the [Provincial Ground
 
 The coding flow has three streams of data input/output. 
 
-data: contains reference data needed to run the scripts (data_jb, data_rc, data_old) that need to be updated for each snapshot, and a folder for storing new data (data_new) generated on running this script.
+data: contains reference data (CSV files) needed to run the scripts (data_jb, data_rc, data_old) that need to be updated for each snapshot, and a folder for storing new data (data_new) generated on running this script. Note: the CSV files CANNOT be replaced by Excel files. If you use Excel, please use the "Save as..." option to generate the necesary CSV files.
 
 generated: contains a copy of the figures and tables generated on running this script as well as their underlying data.
 
