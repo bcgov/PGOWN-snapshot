@@ -19,13 +19,13 @@ See the License for the specific language governing permissions and limitations 
 coverage](https://codecov.io/gh/bcgov/bcdata/branch/main/graph/badge.svg)](https://app.codecov.io/gh/bcgov/bcdata?branch=main)-->
 <!-- badges: end -->
 
-An R Coding pipeline for retrieving & summarizing data for the [Provincial Groundwater Observation Well Network (PGOWN)](https://www2.gov.bc.ca/gov/content?id=B03D0994BB5C4F98B6F7D4FD8610C836) in the [real-time water database](https://www2.gov.bc.ca/gov/content?id=39A675506AE54C4CB240849338B7C8D8) used to prepare bi-annual snapshots of the network and its performance. This reporting tool and data pipeline maintained by the Data Management unit of the LSDMR section (EMAB branch of the EPD division) in the Ministry of Env and Parks, Govt. of British Columbia.
+An R Coding pipeline for retrieving & summarizing data for the [Provincial Groundwater Observation Well Network (PGOWN)](https://www2.gov.bc.ca/gov/content?id=B03D0994BB5C4F98B6F7D4FD8610C836) in the [real-time water database](https://www2.gov.bc.ca/gov/content?id=39A675506AE54C4CB240849338B7C8D8) used to prepare bi-annual snapshots of the network and its performance. This reporting tool and data pipeline is maintained by the Data Management unit of the LSDMR section (EMAB branch of the EPD division) in the Ministry of Env and Parks, Govt. of British Columbia.
 
 ### Code structure
 
 The coding flow has three streams of data input/output. 
 
-data: contains reference data (CSV files) needed to run the scripts (data_jb, data_rc, data_old) that need to be updated for each snapshot, and a folder for storing new data (data_new) generated on running this script. Note: the CSV files CANNOT be replaced by Excel files. If you use Excel, please use the "Save as..." option to generate the necesary CSV files.
+data: contains reference data (CSV files) needed to run the scripts (data_jb, data_rc, data_old) that need to be updated for each snapshot, and a folder for storing new data (data_new) generated on running this script. Note: the CSV files CANNOT be replaced by Excel files. If you use Excel, please use the "Save as..." option to generate the necessary CSV files.
 
 generated: contains a copy of the figures and tables generated on running this script as well as their underlying data.
 
