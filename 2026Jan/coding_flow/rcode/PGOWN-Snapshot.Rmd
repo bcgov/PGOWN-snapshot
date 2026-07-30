@@ -1,0 +1,1153 @@
+---
+#Process PGOWN Wells Snapshot
+#Compiled RMarkdown file to generate HTML report
+#Q:? Do we need to remove these identification details below?
+#Written by: KJ
+#Now maintained by: BS
+title: "Provincial Groundwater Observation Well Network (PGOWN)"
+params:
+  set_subtitle: Feb 2026
+subtitle: "`r params$set_subtitle`"
+output: html_document
+---
+
+The Provincial Groundwater Observation Well Network Snapshot has taken place every year around February and August, since 2015. The PGOWN has been active since 1961 and is a cross-ministry long-term groundwater level monitoring commitment between the Ministry of Environment and Parks and Ministry of Water, Land and Resource Stewardship. All publicly available, active PGOWN well information from the PGOWN  <u>[Interactive Map](https://governmentofbc.maps.arcgis.com/apps/webappviewer/index.html?id=b53cb0bf3f6848e79d66ffd09b74f00d)</u> is assessed on a region-by-region and provincial basis. For this snapshot, current conditions at the time of assessment are compared to specific, established network operating standards. This assessment is part of a long established continuous-improvement model for network operations.
+
+```{r setup, include=FALSE}
+
+#Turn on when running this RMD file directly and not from Shiny
+#knitr::opts_knit$set(root.dir = normalizePath("../../.."))
+
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = FALSE)
+
+```
+
+```{r, setup-variables, include=FALSE}
+
+## Load libraries
+library(readr) #load data from BC Data Catalogue
+library(readxl) #load xlsx files
+library(dplyr) # data munging
+#library(envreportutils)
+library(tidyr)
+library(stringr)
+library(lubridate)
+library(gridExtra)
+library(leafpop)
+library(here) 
+library(ggplot2)
+library(bcmaps)
+library(bcdata)
+library(sf)
+library(mapview)
+library(gt)
+library(yaml)
+library(here)
+library(tidyverse)
+library(httr)
+library(reticulate)
+library(jsonlite)
+
+
+#library(raster)
+#library(leaflet)
+#library(leafpop)
+#library(patchwork)
+
+#have to save .Renviron in the home directory where the project is placed; not the working dir
+readRenviron(".Renviron")
+parameters <- read_yaml("report_parameter_list.yaml")
+
+#knitr::opts_knit$set(root.dir = str_c(here::here(), Sys.getenv("report_folder")))
+#knitr::opts_knit$set(root.dir = str_c(here(), report_folder))
+
+report_folder = parameters$report_folder
+
+#date_of_current_report = Sys.getenv("date_of_current_report")
+date_of_current_report = parameters$date_of_current_report
+
+#date_of_previous_report = Sys.getenv("date_of_previous_report")
+date_of_previous_report = parameters$date_of_previous_report
+
+#date_of_data_gap_start = Sys.getenv("date_of_data_gap_start")
+date_of_data_gap_start = parameters$date_of_data_gap_start
+
+#date_of_data_gap_end = Sys.getenv("date_of_data_gap_end")
+date_of_data_gap_end = parameters$date_of_data_gap_end
+
+#% data performance target by default
+#target_data_default = as.numeric(Sys.getenv("target_data_default"))
+target_data_default = as.numeric(parameters$target_data_default)
+
+# year when data approval target was set
+#target_data_approval_year = Sys.getenv("target_data_approval_year")
+target_data_approval_year = parameters$target_data_approval_year
+
+
+# % data approval target set
+#target_data_approval = as.numeric(Sys.getenv("target_data_approval"))
+target_data_approval = as.numeric(parameters$target_data_approval)
+
+# year when data graded target was set
+#target_data_graded_year = Sys.getenv("target_data_graded_year")
+target_data_graded_year = parameters$target_data_graded_year
+
+# % data gap target set
+#target_data_gap_percent = as.numeric(Sys.getenv("target_data_gap_percent"))
+target_data_gap_percent = as.numeric(parameters$target_data_gap_percent)
+
+
+#% days times number of days in 6 months
+target_data_gap = 0.01*target_data_gap_percent*6*30
+
+#year when data gap target was set
+#target_data_gap_year = Sys.getenv("target_data_gap_year")
+target_data_gap_year = parameters$target_data_gap_year
+
+# days threshold used to define telemetry station as offline
+#target_days_telemetry = as.numeric(Sys.getenv("target_days_telemetry"))
+target_days_telemetry = as.numeric(parameters$target_days_telemetry)
+
+
+# target for percent telemetry stations offline
+#target_telemetry_stn_offline = as.numeric(Sys.getenv("target_telemetry_stn_offline"))
+target_telemetry_stn_offline = as.numeric(parameters$target_telemetry_stn_offline)
+
+
+# year when telemetry target was set
+#target_days_telemetry_year = Sys.getenv("target_days_telemetry_year")
+target_days_telemetry_year = parameters$target_days_telemetry_year
+
+```
+
+```{r AQUARIUS USER ACCESS SECTION, include = TRUE, echo = FALSE}
+#getwd()
+
+#had to change key words to "api_" as R was confusing them with t
+  # Prompt for password
+  usernm <- Sys.getenv("api_username")
+  passwd <- Sys.getenv("api_password")
+
+# # For password entry without echoing the input (for security), use .Renviron or getPass.
+if (usernm == "") {
+  
+    # First, ensure the getPass package is installed.
+    if (!requireNamespace("getPass", quietly = TRUE)) {
+        install.packages("getPass")
+    }
+
+  library(getPass)
+
+  # Prompt for password using getPass::getPass()
+  usernm <- getPass::getPass("Enter username: ", forcemask = FALSE)
+  passwd <- getPass::getPass("Enter password: ", forcemask = TRUE)
+
+  # Display the entered username (avoid printing the password for security)
+  # cat("Username entered:", username, "\n")
+  # You can now use the 'username' and 'password' variables in your code.
+  
+}
+
+```
+
+
+```{r creating snapshot file, include = TRUE, echo = FALSE, fig.align="left", fig.height=4.5, fig.width = 7}
+
+#here()
+
+#getwd()
+### Building the Provincial Snapshot using AQUARIUS data
+
+# Convert the string to a Date object
+date_current <- as.Date(date_of_current_report, format = "%Y-%m-%d")
+date_previous <- as.Date(date_of_previous_report, format = "%Y-%m-%d")
+
+date_data_gap_start <- as.Date(date_of_data_gap_start, format = "%Y-%m-%d")
+date_data_gap_end <- as.Date(date_of_data_gap_end, format = "%Y-%m-%d")
+
+# Format the Date object to "Jan 31, 2025"
+date_current_print_report <- format(date_current, format = "%b %d, %Y")
+# Format the Date object to "Jan 31, 2025"
+date_previous_print_report <- format(date_previous, format = "%b %d, %Y")
+
+date_data_gap_start_print <- format(date_data_gap_start, format = "%b %d, %Y")
+date_data_gap_end_print <- format(date_data_gap_end, format = "%b %d, %Y")
+
+#running through well data to calculate age of approval/grading
+#Run this script to get a csv file with the dates of last data approval and grade.
+#Number of months since data was last approved or graded was also calculated.
+
+source(str_c(here(), report_folder, "/coding_flow/rcode/timeseries_client.R"))
+
+## Connect to the database to get station location meta-data
+url <- Sys.getenv("api_url")
+timeseries$connect(url, usernm, passwd)
+
+#Get a list of all the stations with data from the past year with published working SGWL data
+#SGWL is groundwater level
+#https://www2.gov.bc.ca/gov/content/environment/air-land-water/water/water-science-data/water-data-tools/real-time-water-data-reporting/data-parameters
+#would the results change if I changed the parameter?
+#Map metrics onto code based on team
+#Currently running for PGOWN
+
+#Report looking back six months or a year
+#just pull data in longer than that
+#
+all_sgwl <- timeseries$getTimeSeriesDescriptions(parameter = "SGWL") %>%
+  filter(Label == "Working", Publish == "TRUE", RawEndTime > "2020-01-01T00:00:00Z") %>%
+  select(Identifier, LocationIdentifier, LastModified, RawStartTime, RawEndTime, CorrectedStartTime, CorrectedEndTime)
+
+#Loop through each station and get the approval record for the last 5 years
+for (i in seq(1, nrow(all_sgwl))) {
+
+  #print(i)
+  #Get the data corrections from the three years
+  #Notes, grade doesn't seem to record the edited by who and when
+  DataCorrections <- timeseries$getTimeSeriesCorrectedData(all_sgwl$Identifier[i], "2020-01-01T00:00:00Z", date_current)
+
+  #Select only what we need and only the most recent approval as this is the one we calculate the age against
+  Approvals <- DataCorrections$Approvals %>% filter(LevelDescription == "Approved") %>% select(c(DateAppliedUtc, User, LevelDescription, EndTime))
+  Grades <- DataCorrections$Grades %>% filter(!(GradeCode %in% c(0, -1)))
+
+  #Only one record should be found but for wells with no approved data they will have 0 rows so need to be replaced somehow with an eqv report with addn info on location of well and date of last grade
+  if (nrow(Approvals) == 0){
+    Approvals[1,] <- NaN
+    Approvals$ObsWell <- all_sgwl$LocationIdentifier[i]
+    Approvals$LastGrade <- DateOfLastGrade
+  }
+
+  Approvals <- Approvals[Approvals$EndTime == max(Approvals$EndTime), ]
+
+  DateOfLastGrade <- max(Grades$EndTime)
+
+  #Only one record should be found in general but addn info about it needs to be added
+  if (nrow(Approvals) == 1) {
+    Approvals$ObsWell <- all_sgwl$LocationIdentifier[i]
+    Approvals$LastGrade <- DateOfLastGrade
+  }
+
+  #For the first iteration make a new data frame to hold all the data
+  if (i == 1){
+    all_approval_dat <- Approvals
+  } else {
+    all_approval_dat <- rbind(all_approval_dat, Approvals)
+  }
+#end for loop
+}
+
+#set reporting date, age of approved data will be calculated against this
+ReportDate <- as.POSIXct(date_current)
+
+all_approval_dat$EndTime <- as.POSIXct(all_approval_dat$EndTime, format = "%Y-%m-%dT%H:%M:%S")
+all_approval_dat$LastGrade <- as.POSIXct(all_approval_dat$LastGrade)
+all_approval_dat$AgeApprovedDat_Months <- round(time_length(ReportDate - all_approval_dat$EndTime, unit = "month"),1)
+all_approval_dat$AgeGradeDat_Months <- round(time_length(ReportDate - all_approval_dat$LastGrade, unit = "month"),1)
+all_approval_dat$AgeApprovedDat_Days <- round(time_length(ReportDate - all_approval_dat$EndTime, unit = "day"),1)
+all_approval_dat$AgeGradeDat_Days <- round(time_length(ReportDate - all_approval_dat$LastGrade, unit = "day"),1)
+
+all_approval_dat$ReportDate  <- ReportDate
+#
+#Sort by dates: The most important thing to point out are negatives
+#will also sort the file out so it looks reasonable
+all_approval_dat <- all_approval_dat %>% dplyr::select(ObsWell, User, LevelDescription, DateAppliedUtc, everything()) %>% mutate(negative_flag = ifelse(AgeGradeDat_Months < 0 | AgeApprovedDat_Months < 0, 1, 2)) %>%
+  arrange(negative_flag, .desc = FALSE) %>% dplyr::select(-negative_flag)
+
+#https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
+
+write.csv(all_approval_dat, file = str_c(".", report_folder, "/coding_flow/data/data_new/well_snapshot.csv"), row.names = FALSE)
+```
+
+
+### Provincial Snapshot: Number of Active Wells 
+
+```{r provincial plots, include = TRUE, echo= FALSE, fig.align="left", fig.height=4.5, fig.width = 7}
+
+#getwd()
+
+#bringing in jb's teams' latest file on list of wells
+#Q:? identifier?
+well_lookup <- read_excel(str_c(".", report_folder, "/coding_flow/data/data_jb/well_lookup.xlsx"), sheet = "well_lookup") %>% 
+  mutate(Region = ifelse(Region == "North East", "Northeast", Region))
+well_lookup <- well_lookup %>% filter(STATUS == 'Active')
+well_lookup$Well_Name <- str_pad(well_lookup$Well_ID, 3, side = "left", pad = "0")
+well_lookup$Well_Name <- paste0("OW",well_lookup$Well_Name)
+
+#bringing in old files tracking the number of active wells over the years
+number_of_active_wells <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_old/NumberOfWells.csv"), stringsAsFactors = F)
+number_of_active_wells$report_date <- as_date(number_of_active_wells$report_date)
+
+new_active_wells <- data.frame(report_date = as_date(date_of_current_report), no.active.wells = dim(well_lookup)[1])
+
+no.active.wells <- new_active_wells$no.active.wells
+
+number_of_active_wells <- rbind(number_of_active_wells, new_active_wells) %>% 
+  arrange(report_date)
+
+start_date <- number_of_active_wells %>% first() %>% .$report_date
+  
+start_wells <- number_of_active_wells %>% first() %>% .$no.active.wells
+
+date.ticks <- unique(number_of_active_wells %>% select(report_date))
+
+date.ticks <- sort(date.ticks$report_date)
+
+p1 <- number_of_active_wells %>%
+  ggplot(aes(report_date, no.active.wells)) +
+  scale_x_date(breaks = date.ticks, date_labels = "%b-%y")+
+  geom_line() +
+  geom_point() +
+  ylab("Number of Active Wells") +
+  xlab("") +
+  coord_cartesian(ylim = c(125, 250)) +
+  annotate("text", x = as.Date(start_date), y = start_wells - 6, label = as.character(start_wells), colour = "black") +
+  # annotate("text", x = as.Date('2015-02-01'), y = 137, label = "143", colour = "black") +
+
+  annotate("text", x = as.Date(date_of_current_report), y = new_active_wells$no.active.wells + 6, label = as.character(new_active_wells$no.active.wells), colour = "black") +
+  # annotate("text", x = as.Date('2015-02-01'), y = 137, label = "143", colour = "black") +
+  
+  #geom_text(aes(label = no.active.wells), vjust = 0, hjust = 0, angle = 90) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+  # annotate("text", x = as.Date(date_of_current_report), y = 243, label = "237", colour = "black") +
+
+p1
+
+ggsave(str_c(".", report_folder, "/coding_flow/generated/figures/Fig1_NumberOfWells.png"), p1, width = 7, height = 4, units = "in")
+
+
+write.csv(number_of_active_wells, file = str_c(".", report_folder, "/coding_flow/generated/figures/", "Fig1_NumberOfWells.csv"), row.names = FALSE)
+
+write.csv(number_of_active_wells, file = str_c(".", report_folder, "/coding_flow/data/data_new/", "NumberOfWells.csv"), row.names = FALSE)
+
+```
+
+```{r API Client for Carmen files - 1, include = FALSE, echo= FALSE, fig.align="left", fig.height=4.5, fig.width = 7}
+#–– 2. Define report-date parameters
+report_date      <- format(ReportDate, "%Y-%m")
+report_date_spec <- ymd_hms(paste0(report_date, "-01 00:00:00"), tz = "UTC")
+
+date_cutoff_grade <- report_date_spec %m-% months(7)
+date_abs_min      <- report_date_spec %m-% months(13)
+date_gap_max      <- (report_date_spec %m-% months(7)) - days(1)
+
+
+#–– 3. Connect to API via Python client
+base_url = Sys.getenv("base_url")
+session_url <- paste0(base_url, Sys.getenv("session_url"))
+ts_url <- paste0(base_url, Sys.getenv("ts_url"))
+ts_data_url <- paste0(base_url, Sys.getenv("ts_data_url"))
+loc_url <- paste0(base_url, Sys.getenv("loc_url"))
+
+credentials <- list(Username = usernm, EncryptedPassword = passwd)
+session <- POST(session_url, body = credentials, encode='json')
+
+#–– 4. Pull TimeSeriesDescriptions
+resp_ts  <- ts_response <- GET(ts_url)
+df_ts <- fromJSON(content(ts_response, as='text'))$TimeSeriesDescriptions
+
+df_ts
+
+#–– 5. Pull LocationDescriptions and filter active groundwater wells
+loc_response <- GET(loc_url)
+df_loc <- fromJSON(content(loc_response, as='text'))$LocationDescriptions
+df_loc <- df_loc %>% filter(PrimaryFolder == 'Locations.GROUNDWATER.Active Wells')
+df_ts_filt <- df_ts %>%  filter(grepl("SGWL.Working@", Identifier)) %>% filter(LocationIdentifier %in% df_loc$Identifier)
+#df_ts_filt$CorrectedStartTime <- as_datetime(df_ts_filt$CorrectedStartTime, tz='UTC')
+df_ts_filt$CorrectedStartTime
+df_loc
+
+#–– 7. Export Observation-Well telemetry/non-telemetry tags
+get_ds <- function(x) {
+  if (str_detect(x, fixed("Automated Data"))) "Telemetry"
+  else                                "Non-Telemetry"
+}
+
+df_loc
+
+df_loc_to_exp <- df_loc %>% 
+  mutate(Tags = as.character(Tags),
+         DataSource = map_chr(Tags, get_ds))
+
+df_loc_to_exp
+
+write_csv(df_loc_to_exp %>% select(Identifier, DataSource), str_c(".", report_folder, "/coding_flow/data/data_rc/ow_telem.csv"))
+
+#–– 8. Retrieve last 13 months of data for each unique series
+unique_ids     <- unique(df_ts_filt$UniqueId)
+df_recent_year <- tibble(
+  ObsWell       = character(),
+  Timestamp     = as_datetime(character()),
+  NumericValue1 = double(),
+  GradeName1    = character(),
+  ApprovalName1 = character()
+)
+
+counter <- 0
+for (uid in unique_ids) {
+  print(df_ts_filt$LocationIdentifier[df_ts_filt$UniqueId == uid][1])
+  qry <- paste0(
+    ts_data_url, "?TimeSeriesUniqueIds=", uid, "&QueryFrom=",
+    format(date_abs_min, "%Y-%m-%d")
+  )
+  
+  r   <- GET(qry)
+  fromJSON(content(r, as='text'))
+  pts <- fromJSON(content(r, as='text'))$Points
+  
+  if (length(pts)) {
+    df_tmp <- as_tibble(pts) %>% 
+      select(Timestamp, NumericValue1, GradeName1, ApprovalName1) %>% 
+      mutate(ObsWell = df_ts_filt$LocationIdentifier[df_ts_filt$UniqueId == uid][1])
+    df_tmp$Timestamp <- as_datetime(df_tmp$Timestamp)
+    df_recent_year <- bind_rows(df_recent_year, df_tmp)
+  } else {
+    counter <- counter + 1
+    message("no points for #", counter, ": ",
+            df_ts_filt$Identifier[df_ts_filt$UniqueId == uid][1])
+  }
+}
+
+
+df_recent_year
+
+
+```
+```{r API Client for Carmen files - 2, include = FALSE, echo= FALSE, fig.align="left", fig.height=4.5, fig.width = 7}
+
+#–– 9. Grade-cutoff filtering and export
+df_grade <- df_recent_year %>% 
+  select(ObsWell, Timestamp, NumericValue1, GradeName1, ApprovalName1) %>% 
+  filter(Timestamp >= date_cutoff_grade)
+
+df_grade
+
+message("Number of wells graded in last 7 months: ", n_distinct(df_grade$ObsWell))
+
+write_csv(df_grade %>% left_join(well_lookup, by = c("ObsWell" = "Well_Name")), str_c(".", report_folder, "/coding_flow/data/data_rc/", "PGOWN_Grades_Appr.csv"))
+
+#–– 10. Gap-analysis over the 7-to-13-month window
+df_gap <- df_recent_year %>% 
+  arrange(ObsWell, Timestamp) %>% 
+  filter(Timestamp >= date_abs_min) %>% 
+  group_by(ObsWell) %>% 
+  mutate(gap = Timestamp - lag(Timestamp)) %>% 
+  ungroup()
+
+df_gap
+
+obswell_list     <- unique(df_gap$ObsWell)
+df_gap_complete <- tibble(
+  ObsWell       = character(),
+  Timestamp     = as_datetime(character()),
+  NumericValue1 = double(),
+  GradeName1    = character(),
+  ApprovalName1 = character(),
+  gap = duration(),
+  is_first = logical(),
+  is_last = logical()   
+)
+
+# adjust first and last gaps
+for (obs in obswell_list) {
+  global_min <- (df_ts_filt %>% filter(LocationIdentifier == obs))$CorrectedStartTime[1]
+  print(obs)
+  print(global_min)
+  df_gap_tmp <- df_gap %>% 
+    filter(ObsWell == obs) %>% 
+    mutate(
+      is_first = row_number() == 1,
+      is_last  = row_number() == n()
+    ) %>% 
+    mutate(
+      gap = case_when(
+        is_first & min(Timestamp) > date_abs_min & global_min <= date_abs_min ~ (min(Timestamp) - date_abs_min),
+        is_last  & max(Timestamp) < date_gap_max  ~ (date_gap_max - max(Timestamp)),
+        TRUE                                     ~ gap
+      )
+    )
+    df_gap_complete <- bind_rows(df_gap_complete, df_gap_tmp)
+}
+
+df_gap_complete
+# compute hours and drop sub-hour
+df_gap_complete <- df_gap_complete %>% 
+  mutate(
+    GapHours = as.numeric(gap, units = "hours"),
+    GapHours = if_else(GapHours >= 1, GapHours - 1, 0)
+  )
+
+df_gap_complete %>% 
+  filter(Timestamp <= date_gap_max) %>% 
+  group_by(ObsWell) %>% 
+  summarize(GapHours = sum(GapHours, na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  left_join(well_lookup, by = c("ObsWell" = "Well_Name")) %>% 
+  write_csv(str_c(".", report_folder, "/coding_flow/data/data_rc/", "PGOWN_Gap_Hours.csv"))
+
+#–– 11. Telemetry + Active filter for latest-ingest report
+df_loc_telem <- df_loc_to_exp %>% 
+  filter(DataSource == 'Telemetry')
+
+df_sgwl <- df_ts_filt %>% 
+  filter(LocationIdentifier %in% df_loc_telem$Identifier) %>% 
+  filter(!is.na(CorrectedStartTime)) %>% 
+  mutate(
+    CorrectedEndTime = with_tz(ymd_hms(CorrectedEndTime), tzone = "UTC"),
+    LatestIngest_hr  = round(as.numeric(difftime(.POSIXct(Sys.time(), "UTC"), CorrectedEndTime, units = "hours")),digits = 0)
+  ) %>% 
+  select(LocationIdentifier, LatestIngest_hr) %>% 
+  left_join(well_lookup, by = c("LocationIdentifier" = "Well_Name"))
+
+write_csv(df_sgwl, str_c(".", report_folder, "/coding_flow/data/data_rc/", "PGOWN_Telemetry_Latest_Ingest.csv"))
+
+```
+
+
+```{r telemetry stats, include = TRUE, echo= FALSE, fig.align="left", fig.height=4.5, fig.width = 7}
+
+#read the numer of wells by telemetry type
+#read the numer of wells by telemetry type
+#Q:? identifier?
+tel_stats <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_rc/ow_telem.csv"))
+tel_stats <- merge(well_lookup, tel_stats, by.x = 'Well_Name', by.y = 'Identifier', all.x = T, all.y = F)
+
+tel_stats <- tel_stats %>% group_by(Region, DataSource) %>% summarize(count = n(), .groups = "drop")
+
+tel_stats <- pivot_wider(tel_stats, names_from = "DataSource", values_from = "count") 
+
+tel_stats <- tel_stats %>% mutate(across(everything(), ~ replace(., is.na(.), 0))) %>% mutate(Total = `Non-Telemetry` + Telemetry)
+
+tel_stats <- tel_stats %>% select(Region, Total, Telemetry, `Non-Telemetry`)
+
+tel_stats <- tel_stats[order(tel_stats$Total, decreasing = T),]
+
+table <- tel_stats %>% ungroup() %>% gt() %>% tab_header(title = "Wells by Region") %>% tab_options(table.width = pct(75), table.align = "left")
+
+gtsave(table, str_c(".", report_folder, "/coding_flow/generated/tables/Tbl1_TelemetryStats.png"))
+
+write.table(tel_stats, file = str_c(".", report_folder, "/coding_flow/generated/tables/", "Tbl1_TelemetryStats.csv"), row.names = FALSE)
+
+
+table
+```
+
+The West Coast Region has had a full-time, dedicated Groundwater Technician since 2006, and a second dedicated technician was added in 2024. The South Coast Region and the South Area (Okanagan-Kootenay) implemented a full-time, dedicated Groundwater Technician in January 2016. The remainder of the network is operated by partial FTEs working in their respective regional Water Authorizations teams who must balance the workloads of their core positions with work on the network. 
+
+### Data Approvals and Well Performance
+
+```{r Region Data Approval plot, include = TRUE, echo= FALSE, fig.align="left", fig.height=4.5, fig.width = 7}
+
+### Data Approval and Well Performance
+#time since last approval
+
+### Data Approval and Well Performance
+#time since last approval
+#UPDATE 20260108 Filter out wells that have not been approved or that have not been approved after grading (margin of +/- 1 day)
+well_approval <- read.csv(file = str_c(".", report_folder, "/coding_flow/data/data_new/well_snapshot.csv"), stringsAsFactors = F) %>% select("ObsWell", "AgeApprovedDat_Months", "AgeGradeDat_Months", "AgeApprovedDat_Days", "AgeGradeDat_Days") %>% 
+  dplyr::filter(!is.na(AgeApprovedDat_Months)) %>% 
+  dplyr::filter(AgeApprovedDat_Days > (AgeGradeDat_Days-1)) %>% 
+  dplyr::select("ObsWell", "AgeApprovedDat_Months")
+
+#merge to add regions
+well_approval <- inner_join(well_approval, well_lookup, by = c("ObsWell" = "Well_Name")) %>% arrange(AgeApprovedDat_Months)
+
+#well lookup also needs to be filtered for the rest of the analysis
+well_lookup_fltr <- inner_join(well_lookup, well_approval %>% dplyr::select("ObsWell"), by = c("Well_Name" = "ObsWell"))
+
+no.active.wells.fltr = dim(well_lookup_fltr)[1]
+
+#OLD WAY to merge BEFORE ABOVE FILTER FOR NOT YET APPROVED WAS IMPOSED
+#merge to add regions
+#well_approval <- merge(well_approval, well_lookup, by.x = "ObsWell", by.y = "Well_Name", all.x = F, all.y = T) %>% arrange(AgeApprovedDat_Months)
+
+#Q:? later on rc data we are tracking graded/approved
+#here we are marking all wells as approved, even those that are NA or neg
+#where well approval is missing put it 999 so
+well_approval$AgeApprovedDat_Months[is.na(well_approval$AgeApprovedDat_Months)] <- 999
+
+well_approval$AgeApprovedDat_Months[well_approval$AgeApprovedDat_Months < -1] <- 998
+
+well_approval <- well_approval %>% 
+  mutate(age_approval = case_when(AgeApprovedDat_Months < 7 ~ "<7 Months", 
+                                  7 <= AgeApprovedDat_Months & AgeApprovedDat_Months < 12 ~ "7 - 12 Months",
+                                  12 <= AgeApprovedDat_Months & AgeApprovedDat_Months <= 24 ~ "12 - 24 Months",                                   AgeApprovedDat_Months > 24 ~ ">24 Months"))
+
+well_approval_summary <- well_approval %>% group_by(Region, age_approval) %>% summarize(count = n(), .groups = "drop") 
+
+#number of well per region
+count_well_by_region_fltr <- well_lookup_fltr %>% group_by(Region) %>% summarize(number_of_wells = n())
+
+#merge the two and calculate the percentages
+well_approval_summary <- merge(well_approval_summary, count_well_by_region_fltr, 
+                     by.x = 'Region', by.y = 'Region') %>% arrange(desc(number_of_wells))
+
+well_approval_summary$percent = (well_approval_summary$count/well_approval_summary$number_of_wells) * 100
+
+#set the factors so the legend displays in the right order
+well_approval_summary$age_approval <- factor(well_approval_summary$age_approval,
+                                   levels = c('>24 Months', '12 - 24 Months',
+                                              '7 - 12 Months','<7 Months'))
+
+#add the provincial average
+prov_summary <- well_approval_summary %>% group_by(age_approval) %>% 
+  summarize(Region = "Province-wide", count = sum(count), 
+            number_of_wells = no.active.wells.fltr, percent = (sum(count)/number_of_wells)*100)
+
+well_approval_summary <- rbind(well_approval_summary, prov_summary)
+
+# #set the order of the regions
+# well_approval_summary$Region <- factor(well_approval_summary$Region, levels = c("Province-wide",
+#                                                             "Northeast",
+#                                                             "Okanagan-Kootenay",
+#                                                             "Omineca",
+#                                                             "Skeena",
+#                                                             "South Coast",
+#                                                             "Thompson-Cariboo",
+#                                                             "West Coast"))
+# 
+well_approval_summary$Region <- factor(well_approval_summary$Region, levels = c("Province-wide", tel_stats$Region))
+
+mycolors <- c("#C00000", "#FFC000", "#FBF505", "#00B050")
+names(mycolors) <- levels(well_approval_summary$age_approval)
+
+p2a <- ggplot(well_approval_summary, aes(x = Region, y = percent, fill = age_approval)) +
+  geom_bar(stat = "identity", colour = "black", show.legend = TRUE) +
+  ylab("%") +
+  xlab("") +
+  ylim(c(-0.1, 100.1)) +
+  ggtitle("Wells with Approved Data by Age Category") +
+  scale_fill_manual(name = "Age of Data Approval", values = mycolors, drop = FALSE, guide = guide_legend(reverse = TRUE)) +
+  annotate("text", x = 4.4, y = target_data_approval-5, label = str_c(as.character(target_data_approval), "% Target"), fontface=2) +
+  geom_hline(yintercept = target_data_approval, linetype = "dashed", show.legend = F) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p2a
+
+ggsave(str_c(".", report_folder, "/coding_flow/generated/figures/Fig2a_PercentOfWellsAgeApproved.png"), p2a, width = 7, height = 4, units = "in")
+
+write.csv(well_approval_summary, file = str_c(".", report_folder, "/coding_flow/generated/figures/", "Fig2a_PercentOfWellsAgeApproved.csv"), row.names = FALSE)
+
+write.csv(well_approval, file = str_c(".", report_folder, "/coding_flow/generated/figures/", "summarized_pgown_approved_dat.csv"), row.names = FALSE)
+
+
+```
+
+
+```{r Region Consecutive Snapshot Approval Only Comparison plot, include = TRUE, echo= FALSE, fig.align="left", fig.height=4.8, fig.width = 7.6}
+#read in historical performance on the 7 month validation target
+
+
+past_per <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_old/well_stats.csv"), stringsAsFactors = F) %>% 
+  mutate(Region = ifelse(Region == "North East", "Northeast", Region))
+
+past_per <- past_per %>% select(Region, report_date, no.active.wells, no.gth.7)
+
+well_approval2 <- well_approval %>% group_by(Region) %>% summarize(no.active.wells = n(), no.gth.7 = sum(AgeApprovedDat_Months > 7))
+
+well_approval2$report_date <- date_of_current_report
+
+#provincial summary of performance
+prov_per <- well_approval2 %>% group_by(report_date) %>% summarize(Region = "Province-wide", 
+                                                      no.active.wells = sum(no.active.wells),
+                                                      no.gth.7 = sum(no.gth.7))
+
+past_per <- rbind(past_per, well_approval2, prov_per)
+
+past_per$percent_meeting_target <- (1 - past_per$no.gth.7/past_per$no.active.wells) * 100
+
+# #set order for plot
+# past_per$Region <- factor(past_per$Region, levels = c("Province-wide",
+#                                                       "Northeast",
+#                                                       "Okanagan-Kootenay",
+#                                                       "Omineca",
+#                                                       "Skeena",
+#                                                       "South Coast",
+#                                                       "Thompson-Cariboo",
+#                                                       "West Coast"))
+
+past_per$Region <- factor(past_per$Region, levels = c("Province-wide", tel_stats$Region))
+
+#for next report
+write.csv(past_per, str_c(".", report_folder, "/coding_flow/data/data_new/well_stats.csv"), row.names = F)
+
+#Percent of wells meeting the 7month target
+p2b <- past_per %>% filter(report_date %in% c(date_of_current_report, date_of_previous_report)) %>% 
+  ggplot(aes(x = Region, y = percent_meeting_target, fill = report_date)) + 
+  geom_col(position = "dodge", colour = 'black', show.legend = TRUE) +
+  ggtitle("Wells Meeting 7-Month Data Approval Target (Consecutive Snapshot Comparison)") +
+  annotate("text", x = 4.4, y = target_data_approval-5, label = str_c(as.character(target_data_approval), "% Target"), fontface=2) +
+  geom_hline(yintercept = target_data_approval, linetype = "dashed", show.legend = T) +
+  ylim(c(-0.1, 100.1)) +
+  ylab("%") +
+  xlab("") +
+  scale_fill_manual(name = "Data Approval Snapshots", values = c("#266DFA","#60CAF3"), labels = c(str_c(format(date_previous, "%b"), " ", format(date_previous, "%Y")), str_c(format(date_current, "%b"), " ", format(date_current, "%Y"))))+
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p2b
+
+write.csv(past_per, file = str_c(".", report_folder, "/coding_flow/generated/figures/", "Fig2b_ConsecutiveSnapshots.csv"), row.names = FALSE)
+
+ggsave(str_c(".", report_folder, "/coding_flow/generated/figures/Fig2b_ConsecutiveSnapshots.png"), p2b, width = 7, height = 4, units = "in")
+
+
+```
+
+**Importance of this metric:** Stations must be visited every 6 months, with data graded and approved within 1 month of site visits, to ensure data quality as sensors will drift over time, and to ensure timely access to data (barring issues of seasonal well accessibility for particular sites). The policy of publishing publicly available water level data that has been approved within the past 7 months was implemented in 2015. Please note that wells where data was graded within the last 2 weeks but not yet approved were removed from this analysis to avoid situations where newly appended and graded data has not yet had enough time to be approved by the data reviewer.
+
+**Target:** Achieve 7-month data approval at ≥ `r target_data_approval`% of stations (implemented in `r target_data_approval_year`).
+
+<br>
+
+
+```{r graded and approved plot, include = TRUE, echo= FALSE, fig.align="left" , fig.height=4.5, fig.width = 8.5 }
+
+#Q:? identifier?
+grading_dat <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_rc/PGOWN_Grades_Appr.csv"), stringsAsFactors = F)
+
+#make the datetime R: seems like taking date and time in hh:mm
+grading_dat$Timestamp <- as.POSIXct(substr(grading_dat$Timestamp, 0, 16))
+
+#grading_dat_fltr <- grading_dat %>% dplyr::filter(ObsWell == "OW517")
+
+grading_dat <- grading_dat %>% group_by(ObsWell) %>% summarize(TotalDataPts = n(),
+                                                               Graded = sum(GradeName1 %in% 
+  c("Excellent", "Very Good", "Good", "Poor", "Substandard", "Unverified")),
+                                                               Approved = sum(ApprovalName1 == "Approved"),
+                                                               per.approved.also.graded = (Graded/Approved) * 100)
+
+#by default: grading_dat had less entries (235) than well_lookup_fltr (237)
+#join in regions
+grading_dat <- merge(grading_dat, well_lookup_fltr, by.x = "ObsWell", by.y = "Well_Name", all.x = F, all.y = T)
+
+#categorize every well
+grading_dat <- grading_dat %>% mutate(type = case_when(per.approved.also.graded == 0 ~ "Issues exist with grading or approval", #approved but not graded
+                                                       per.approved.also.graded < 102 & per.approved.also.graded >= 98 ~ "Data has been approved and graded",
+                                                       per.approved.also.graded >= 102 ~ "Issues exist with grading or approval", #graded but not approved
+                                                       per.approved.also.graded == "NaN" ~ "Issues exist with grading or approval", #not graded or approved
+                                                       is.na(per.approved.also.graded) ~ "No data has been appended in the past 7 months",
+                                                       per.approved.also.graded < 98 & per.approved.also.graded > 0 ~ "Issues exist with grading or approval")) #some approved data is graded
+
+write.csv(grading_dat, file = str_c(".", report_folder, "/coding_flow/generated/figures/", "summarized_pgown_grading_dat.csv"), row.names = FALSE)
+
+#for wells missing all data put 0 as the number of data points to be less confusing
+grading_dat$TotalDataPts[is.na(grading_dat$TotalDataPts)] <- 0
+
+#group by regions
+grading_dat_summary <- grading_dat %>% group_by(Region, type) %>% summarize(count.by.region.type = n(), .groups = "drop")
+
+#Commenting because run already but may not be run if code is split in future
+##number of well per region
+#count_well_by_region_fltr <- well_lookup_fltr %>% group_by(Region) %>% summarize(number_of_wells = n())
+
+grading_dat_summary <- merge(grading_dat_summary, count_well_by_region_fltr, by.x = "Region", by.y = "Region", all.x = F, all.y = T) %>% rename(well.per.reg = number_of_wells) %>% mutate(percent = 100*count.by.region.type/well.per.reg)
+
+grading_dat_summary$type <- factor(grading_dat_summary$type, levels = c("No data has been appended in the past 7 months", "Issues exist with grading or approval", "Data has been approved and graded"))
+
+#add the provincial average
+prov_grading_dat <- grading_dat_summary %>% group_by(type) %>% summarize(Region = "Province-wide", 
+                                                  count.by.region.type = sum(count.by.region.type), 
+                                                  well.per.reg = no.active.wells.fltr, percent = 100*sum(count.by.region.type)/no.active.wells.fltr)
+
+grading_dat_summary <- rbind(grading_dat_summary, prov_grading_dat)
+
+grading_dat_summary$Region <- factor(grading_dat_summary$Region, levels = c("Province-wide", tel_stats$Region))
+
+p3a <- grading_dat_summary %>%
+  ggplot() +
+  geom_bar(aes(x = Region, y = percent, fill = type), stat = "identity", colour = "black", show.legend = TRUE) +
+  scale_fill_manual(name = "State of Data Grading/Approval", values = c("#C00000","#FFC000","#00B050"), drop = FALSE, guide = guide_legend(reverse = TRUE)) +
+  ylim(c(-0.1, 100.1)) +
+  ylab("%") +
+  xlab("") +
+  ggtitle("Wells with Graded Approved Data in Past 7 Months") +
+  annotate("text", x = 4.5, y = target_data_approval-5, label = str_c(as.character(target_data_approval), "% Target"), fontface=2) +
+  geom_hline(yintercept = target_data_approval, linetype = "dashed", show.legend = T) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(legend.position="right", legend.direction="vertical")
+
+p3a
+
+ggsave(str_c(".", report_folder, "/coding_flow/generated/figures/Fig3a_StatusGradingApproval.png"), p3a, width = 7, height = 4, units = "in")
+
+write.csv(grading_dat_summary, file = str_c(".", report_folder, "/coding_flow/generated/figures/", "Fig3a_StatusGradingApproval.csv"), row.names = FALSE)
+
+```
+
+```{r Region Consecutive Snapshot Approved and Graded Comparison plot, include = TRUE, echo= FALSE, fig.align="left", fig.height=4.8, fig.width = 7.6}
+#read in historical performance on the 7 month validation target
+
+#Take the data underlying the old figures and use them to create new figures
+#How to make this repeatable?
+#Make people manually move this data to data_old
+grading_dat_old <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_old/", "Fig3a_StatusGradingApproval.csv")) %>% 
+  dplyr::filter(type == "Data has been approved and graded") %>% 
+  dplyr::select(c(Region, percent)) %>% 
+  mutate(Region = ifelse(Region == "North East", "Northeast", Region))
+
+grading_dat_merged <- grading_dat_summary %>% 
+  dplyr::filter(type == "Data has been approved and graded") %>% 
+  dplyr::select(Region, percent)
+
+grading_dat_merged <- grading_dat_merged %>%
+  mutate(
+    Region = factor(Region, levels = c("Province-wide", tel_stats$Region))
+  ) %>%
+  complete(Region, fill = list(percent = 0))
+
+grading_dat_merged$report_date <- date_of_current_report
+
+grading_dat_old$report_date <- date_of_previous_report
+
+grading_dat_merged <- rbind(grading_dat_merged, grading_dat_old)
+
+grading_dat_merged$Region <- factor(grading_dat_merged$Region, 
+                                    levels = c("Province-wide", tel_stats$Region))
+
+#Percent of wells meeting the 7month target
+p3b <- grading_dat_merged %>% 
+  ggplot(aes(x = Region, y = percent, fill = report_date)) + 
+  geom_col(position = "dodge", colour = 'black', show.legend = TRUE) +
+  ggtitle("Wells Meeting Data Grading Target (Consecutive Snapshot Comparison)") +
+  annotate("text", x = 4.4, y = target_data_approval-5, label = str_c(as.character(target_data_approval), "% Target"), fontface=2) +
+  geom_hline(yintercept = target_data_approval, linetype = "dashed", show.legend = T) +
+  ylim(c(-0.1, 100.1)) +
+  ylab("%") +
+  xlab("") +
+  scale_fill_manual(name = "Data Grading/Approval Snapshots", values = c("#266DFA","#60CAF3"), labels = c(str_c(format(date_previous, "%b"), " ", format(date_previous, "%Y")), str_c(format(date_current, "%b"), " ", format(date_current, "%Y"))))+
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p3b
+
+write.csv(grading_dat_merged, file = str_c(".", report_folder, "/coding_flow/generated/figures/", "Fig3b_ConsecutiveSnapshots.csv"), row.names = FALSE)
+
+ggsave(str_c(".", report_folder, "/coding_flow/generated/figures/Fig3b_ConsecutiveSnapshots.png"), p3b, width = 7, height = 4, units = "in")
+
+```
+
+
+**Importance of this metric:** Grading of reviewed data is essential for communicating data quality to users. When data is reviewed and approved, it must be graded at that time. Moreover, there should be no wells that have no appended data available in the past 7 months; this is to ensure timely access to data (barring issues of seasonal well accessibility for particular sites). Grading of water level data was implemented in 2016.
+
+Please note that there is a 2% tolerance applied to the calculation of this metric with regards to approved data to avoid flagging more minor discrepancies (i.e., if there is slightly more / less approved data vs. graded data for a well, this will not label the well as having issues with its grading). Also, note that wells where data was graded within the last 2 weeks but not yet approved were removed from this analysis to avoid situations where newly appended and graded data has not yet had enough time to be approved by the data reviewer.
+
+**Target:** Have all approved data graded at ≥ `r target_data_default`% of stations (implemented in `r target_data_graded_year`).
+
+<br>
+
+```{r data gaps, include = TRUE, echo= FALSE, fig.align="left" , fig.height=4.5, fig.width = 7 }
+
+#data gaps
+#Q:? identifier?
+data_gaps <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_rc/PGOWN_Gap_Hours.csv"), stringsAsFactors = F)
+
+data_gaps <- merge(data_gaps, well_lookup, by.x = "ObsWell", by.y = "Well_Name", all.x = F, all.y = T) %>% dplyr::select(-Region.x) %>% rename(Region = Region.y) 
+
+#Q:? replacing by a large number and then removing NAs could cause problems
+data_gaps$GapHours[is.na(data_gaps$GapHours)] <- 9999 #no data at all from the last seven months all data gap!
+
+data_gaps <- data_gaps %>% mutate(gap_type = case_when(GapHours < target_data_gap*24 ~ str_c("< ", as.character(target_data_gap), " Days"),
+                              target_data_gap*24 <= GapHours & GapHours < 2*target_data_gap*24 ~ str_c(as.character(target_data_gap), " - ", as.character(2*target_data_gap), " Days"),
+                              2*target_data_gap*24 <= GapHours & GapHours < 3*target_data_gap*24 ~ str_c(as.character(2*target_data_gap), " - ", as.character(3*target_data_gap), " Days"),
+                              3*target_data_gap*24 < GapHours ~ str_c("> ", as.character(3*target_data_gap), " Days")))
+
+write.csv(data_gaps, file = str_c(".", report_folder, "/coding_flow/generated/figures/", "summarized_pgown_data_gaps.csv"), row.names = FALSE)
+
+data_gaps_summary <- data_gaps %>% group_by(Region, gap_type) %>% summarize(no.wells = n(), .groups = "drop")
+
+#Commenting because run already but may not be run if code is split in future
+##number of well per region
+#count_well_by_region <- well_lookup %>% group_by(Region) %>% summarize(number_of_wells = n())
+
+count_well_by_region <- well_lookup %>% group_by(Region) %>% summarize(number_of_wells = n())
+
+#merge the two and calculate the percentages
+data_gaps_summary <- merge(data_gaps_summary, count_well_by_region, by.x = 'Region', by.y = 'Region') %>% rename(well.per.reg = number_of_wells) %>% mutate(percent = 100*no.wells/well.per.reg)
+
+#add province to the chart
+prov_data_gaps_summary <- data_gaps_summary %>% group_by(gap_type) %>% summarize(Region = "Province-wide", 
+                                                            no.wells = sum(no.wells), 
+                                                            well.per.reg = dim(well_lookup)[1], percent = (no.wells/well.per.reg)*100)
+
+data_gaps_summary <- rbind(data_gaps_summary, prov_data_gaps_summary)
+
+data_gaps_summary$Region <- factor(data_gaps_summary$Region, levels = c("Province-wide", tel_stats$Region))
+
+# #set the order for plotting
+# data_gaps_summary$Region.y <- factor(data_gaps_summary$Region.y, levels = c("Province-wide",
+#                                                                             "Northeast",
+#                                                                             "Okanagan-Kootenay",
+#                                                                             "Omineca",
+#                                                                             "Skeena",
+#                                                                             "South Coast",
+#                                                                             "Thompson-Cariboo",
+#                                                                             "West Coast"))
+
+data_gaps_summary$gap_type <- factor(data_gaps_summary$gap_type, levels = c("> 81 Days",
+                                                                            str_c(as.character(2*target_data_gap), " - ", as.character(3*target_data_gap), " Days"),
+                                                                            str_c(as.character(target_data_gap), " - ", as.character(2*target_data_gap), " Days"),
+                                                                            str_c("< ", as.character(target_data_gap), " Days")))
+
+mycolors <- c("#C00000", "#FFC000", "#FBF505", "#00B050")
+
+names(mycolors) <- levels(data_gaps_summary$gap_type)
+
+p4a <- ggplot(data_gaps_summary, aes(x = Region, y = percent, fill = gap_type)) +
+  geom_bar(stat = "identity", colour = "black", show.legend = TRUE) +
+   scale_fill_manual(name = "Length of Data Gaps", values = mycolors, drop = FALSE, guide = guide_legend(reverse = TRUE)) +
+  ylab("%") +
+  xlab("") +
+  annotate("text", x = 4.5, y = target_data_default-5, label = str_c(as.character(target_data_default), "% Target"), fontface=2) +
+  geom_hline(yintercept = target_data_default, linetype = "dashed", show.legend = F) +
+  ggtitle("Wells with Data Gaps") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p4a
+
+write.csv(data_gaps_summary, file = str_c(".", report_folder, "/coding_flow/generated/figures/", "Fig4a_StatusDataGaps.csv"), row.names = FALSE)
+
+ggsave(str_c(".", report_folder, "/coding_flow/generated/figures/Fig4a_StatusDataGaps.png"), p4a, width = 7, height = 4, units = "in")
+
+```
+
+```{r Region Consecutive Snapshot Data Gaps Comparison plot, include = TRUE, echo= FALSE, fig.align="left", fig.height=4.3, fig.width = 7.0}
+
+#Take the data underlying the old figures and use them to create new figures
+#How to make this repeatable?
+#Make people manually move this data to data_old
+data_gaps_old <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_old/",
+                                "Fig4a_StatusDataGaps.csv")) %>% 
+  dplyr::filter(gap_type == "< 27 Days") %>% 
+  dplyr::select(Region, percent) %>% 
+  mutate(Region = ifelse(Region == "North East", "Northeast", Region))
+
+#read in historical performance on the 7 month validation target
+data_gaps_merged <- data_gaps_summary %>% 
+  dplyr::filter(gap_type == "< 27 Days") %>% 
+  dplyr::select(Region, percent)
+
+data_gaps_merged$report_date <- date_of_current_report
+
+data_gaps_old$report_date <- date_of_previous_report
+
+data_gaps_merged <- rbind(data_gaps_merged, data_gaps_old)
+
+data_gaps_merged$Region <- factor(data_gaps_merged$Region, 
+                                    levels = c("Province-wide", tel_stats$Region))
+
+#Percent of wells meeting the 7month target
+p4b <- data_gaps_merged %>% 
+  ggplot(aes(x = Region, y = percent, fill = report_date)) + 
+  geom_col(position = "dodge", colour = 'black', show.legend = TRUE) +
+  ggtitle("Wells Meeting 6-Month Data Gap Target (Consecutive Snapshot Comparison)") +
+  annotate("text", x = 4.5, y = target_data_default-5, label = str_c(as.character(target_data_default), "% Target"), fontface=2) +
+  geom_hline(yintercept = target_data_default, linetype = "dashed", show.legend = T) +
+  ylim(c(-0.1, 100.1)) +
+  ylab("%") +
+  xlab("") +
+  scale_fill_manual(name = "Data Gap Snapshots", values = c("#266DFA","#60CAF3"), labels = c(str_c(format(date_previous, "%b"), " ", format(date_previous, "%Y")), str_c(format(date_current, "%b"), " ", format(date_current, "%Y"))))+
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p4b
+
+write.csv(data_gaps_merged, file = str_c(".", report_folder, "/coding_flow/generated/figures/", "Fig4b_ConsecutiveSnapshots.csv"), row.names = FALSE)
+
+ggsave(str_c(".", report_folder, "/coding_flow/generated/figures/Fig4b_ConsecutiveSnapshots.png"), p4b, width = 7, height = 4, units = "in")
+
+```
+
+
+**Importance of this metric:** Gaps in the data record will adversely impact future analysis of the groundwater level data. To calculate long-term groundwater level trends, data gaps must be kept to less than `r target_data_gap_percent`% of the period of record (as per Environmental Reporting BC methodology for groundwater level trend analysis [updated from 25%, October 2024]). As such, regions strive to keep such gaps to a minimum. This chart displays the percent of wells that fall within designated data gap length categories between **`r date_data_gap_start_print` and `r date_data_gap_end_print`** within each region. This data gap policy was implemented in 2024. Please note:
+
+  1.    The data analyzed to determine the number of data gaps is from a 6-month period ending 7 months ago, meaning field staff should have visited these sites and filled in data gaps by the time this latest snapshot is published.
+  
+  2.	Some gaps measured here are not permanent gaps as field staff may later be able to append data to those missing periods.
+  
+**Target:** Data gaps should be less than `r target_data_gap` days (in a 6-month period) at ≥ `r target_data_default`% stations (implemented in `r target_data_gap_year`).
+
+<br>
+
+```{r down telemetry, include = TRUE, echo= FALSE, fig.align="left" , fig.height=4.5, fig.width = 7}
+
+#Q:? identifier?
+down_tel <- read.csv(str_c(".", report_folder,  "/coding_flow/data/data_rc/PGOWN_Telemetry_Latest_Ingest.csv"), stringsAsFactors = F) %>% 
+  dplyr::select(-Region)
+
+down_tel <- merge(down_tel, well_lookup, by.x = "LocationIdentifier", by.y = "Well_Name", all.x = F, all.y = T) %>% filter(LatestIngest_hr > target_days_telemetry*24) #more than 30 days
+
+down_tel$`Days Offline` <- round(down_tel$LatestIngest_hr/24)
+
+write.csv(down_tel, file = str_c(".", report_folder, "/coding_flow/generated/figures/", "summarized_pgown_tel_offline.csv"), row.names = FALSE)
+
+#telemetry overview
+tel_overview = data.frame(name = c("Total Number of Telemetry Wells", "Percent of Active Wells with Telemetry", "Percent of Telemetry Wells Offline"),
+                          values = c(as.character(round(sum(tel_stats$Telemetry),0)), str_c(as.character(round((sum(tel_stats$Telemetry)/no.active.wells)*100,0)), "%"), str_c(as.character(round((dim(down_tel)[1]/sum(tel_stats$Telemetry))*100,0)), "%")))
+
+table <- gt(tel_overview) %>%
+  tab_header("Overview of Telemetry Wells") %>%
+  cols_label(name = "", values = "") %>% tab_options(table.width = pct(75), table.align = "left")
+
+# table_dat <- down_tel %>% select(LocationIdentifier, Region.y, `Days Offline`)
+# table_dat <- table_dat[order(table_dat$`Days Offline`, decreasing = T),]
+# 
+# gt(table_dat) %>% 
+#   tab_header(title = str_c("Wells Offline ", as.character(target_days_telemetry), " Days or More")) %>%
+#   cols_label(LocationIdentifier = "Well",
+#              Region.y = "Region") %>% tab_options(table.width = pct(75), table.align = "left")
+
+# p <- down_tel %>% group_by(Region.y)  %>% summarize(per_missing = (1 - (sum(LatestIngest_hr > (30*24))/n()))*100 ) %>%
+#   ggplot(aes(y = per_missing, x = Region.y)) +
+#   geom_bar(stat = 'identity') +
+#   ggtitle("Percent of Telemetry Wells with Current Data") +
+#   ylab("%") +
+#   ylim(c(0,100)) +
+#   xlab("") +
+#   theme_bw()
+# p
+
+gtsave(table, str_c(".", report_folder, "/coding_flow/generated/tables/Tbl2_OverviewTelemetry.png"))
+
+write.csv(tel_overview, file = str_c(".", report_folder, "/coding_flow/generated/tables/", "Tbl2_OverviewTelemetry.csv"), row.names = FALSE)
+
+table
+```
+
+**Importance of this metric:** Wells with telemetry equipment allow for ‘live’ data which improves accessibility to timely data (e.g., for drought monitoring) and data quality by notifying field staff when stations stop transmitting so that they can be repaired sooner and thereby minimize data gaps. The number of telemetry stations that have ceased transmitting should ideally be kept to a minimum when possible (i.e., all telemetry wells should have current data). The table above lists all wells that have been offline for longer than `r target_days_telemetry` days as of **`r date_current_print_report`**. The `r target_days_telemetry`-day cutoff was selected as this would allow sufficient time to visit and repair sites (barring issues of seasonal well accessibility for particular sites). This policy was implemented in `r target_days_telemetry_year`.
+
+**Target:** The proportion of telemetry stations offline should not exceed `r target_telemetry_stn_offline`% of the total number of telemetry stations (implemented in `r target_days_telemetry_year`).
+
+<br>
+
+
+# {.tabset .tabset-fade}
+
+## Map 
+
+```{r, echo = FALSE}
+#get the geospatial information for each well
+# Get the wells which have an OBSERVATION_WELL_NUMBER (and thus are part of PGOWN)
+#Q:? why these well tag numbers added and removed?
+#JK: BC Data Query was not running then
+#grab one well tag no and not the other one because of a shallow/deep situation
+#61559: GWELLS; OW494 may be it was a new well so had to add it manually
+#93712 has a shallow/deep situation; does not have an observation well no.
+wells <- bcdc_query_geodata("e4731a85-ffca-4112-8caf-cb0a96905778") %>%
+ filter(!is.na(OBSERVATION_WELL_NUMBER) | WELL_TAG_NUMBER == 61559) %>%
+ filter(!(WELL_TAG_NUMBER == 93712)) %>%
+ collect() %>% dplyr::select(OBSERVATION_WELL_NUMBER) %>%
+ mutate(OBSERVATION_WELL_NUMBER = as.numeric(OBSERVATION_WELL_NUMBER))
+
+# wells <- read_sf("./data/Wells/GW_WW_WRBC_point.shp") %>%
+#   filter(!is.na(OBSWELLNUM) | WELL_TAG == 61559) %>%
+#   filter(!(WELL_TAG == 93712)) %>% select(OBSWELLNUM) %>%
+#   mutate(OBSERVATION_WELL_NUMBER = as.numeric(OBSWELLNUM)) %>%
+#   select(OBSERVATION_WELL_NUMBER)
+
+# print(names(well_approval))
+```
+
+```{r, echo = FALSE}
+sf_wells <- left_join(well_approval, wells, by = c('Well_ID' = 'OBSERVATION_WELL_NUMBER'))
+
+sf_wells <- st_as_sf(sf_wells)
+
+#Get the boundary of BC from BC MAPS
+bc <- bcmaps::bc_bound()
+
+# 'Region' attribute and merged
+wells_regions <- st_union(sf_wells) %>% 
+  st_voronoi() %>%
+  st_sf() %>%
+  st_collection_extract("POLYGON") %>%
+  st_join(sf_wells[, "Region"]) %>%
+  group_by(Region) %>%
+  summarise() %>%
+  st_intersection(bc) %>%
+  mutate()
+
+#well_regions <- st_read("./data/wellRegions2.shp", quiet = T)
+
+sf_wells <- sf_wells %>% mutate('Months Since Data Approval'  = case_when(AgeApprovedDat_Months > 24 ~ ">24 Months",
+                                                                AgeApprovedDat_Months > 12 & AgeApprovedDat_Months <= 24 ~ "12 - 24 Months",
+                                                                AgeApprovedDat_Months > 7 & AgeApprovedDat_Months <= 12 ~ "7 - 12 Months",
+                                                                AgeApprovedDat_Months <= 7 ~ "<7 Months"))
+
+sf_wells <- sf_wells %>% dplyr::select(Region, ObsWell, `Months Since Data Approval`, AgeApprovedDat_Months)
+
+# Create a dummy row for the missing level
+# setting geometry directly to NA instead of setting st_point to NA messes things up big time!
+# dummy <- st_sf(
+#   Region = "dummy",  # NA coordinates: these points won’t be plotted
+#   ObsWell = "dummy",
+#   `Months Since Data Approval` = "12 - 24 Months",
+#   AgeApprovedDat_Months = "dummy",
+#   geometry = st_sfc(st_point(c(NA_real_, NA_real_)), crs = st_crs(sf_wells))
+# )
+
+#Created so that all categories are displayed in legend even if data doesn't exist corresponding to it
+dummy <- st_sf(
+  Region = rep("dummy", 4),
+  ObsWell = rep("dummy", 4),
+  `Months Since Data Approval` = c(">24 Months", "12 - 24 Months", "7 - 12 Months", "<7 Months"),
+  AgeApprovedDat_Months = rep("dummy", 4),
+  geometry = st_sfc(
+    st_point(c(NA_real_, NA_real_)),
+    st_point(c(NA_real_, NA_real_)),
+    st_point(c(NA_real_, NA_real_)),
+    st_point(c(NA_real_, NA_real_))
+  ),
+  crs = st_crs(sf_wells)
+)
+
+sf_wells <- rbind(sf_wells, dummy)
+
+sf_wells$`Months Since Data Approval` <- factor(sf_wells$`Months Since Data Approval`,
+                                                     levels = c('>24 Months', '12 - 24 Months', 
+                                                                '7 - 12 Months', '<7 Months'))
+
+mycolors <- c("#C00000", "#FFC000", "#FBF505",  "#00B050")
+names(mycolors) <- levels(sf_wells$`Months Since Data Approval`)
+
+sf_wells$AgeApprovedDat_Months[sf_wells$AgeApprovedDat_Months == 999] = 'Never Approved' 
+
+sf_wells$AgeApprovedDat_Months[sf_wells$AgeApprovedDat_Months == 998] = 'Incorrectly Approved to End of Time'
+
+#mapviewOptions(basemaps = c("OpenStreetMap"))
+mapviewOptions(basemaps = c("CartoDB.Positron"))
+
+# mapview(wells_regions, zcol = "Region", col.regions = c("#1b9e77","#d95f02","#7570b3","#e7298a","#66a61e","#e6ab02","#a6761d"),
+#         legend = FALSE, layer.name = "Regions", popup = popupTable(wells_regions, zcol = c("Region"), row.numbers = FALSE, feature.id = FALSE), zIndex = 400) +
+
+mapview(sf_wells, zcol = "Months Since Data Approval", col.regions = mycolors, layer.name = "Months Since Data Approval", popup = popupTable(sf_wells, zcol = c('Region', 'ObsWell', "Months Since Data Approval", 'AgeApprovedDat_Months'), row.numbers = FALSE, feature.id = FALSE), zIndex = 410)
+```
+
+## Performance Over Time
+
+```{r, echo = FALSE, fig.align="left" , fig.height=10, fig.width = 8}
+
+past_per %>%
+  ggplot(aes(x = report_date, y = percent_meeting_target, group = Region)) + 
+  geom_point() +
+  geom_line() +
+  facet_grid('Region') +
+  ylab("Percent of wells meeting 7-month approval target") +
+  xlab("Report Date") +
+  annotate("text", x = 2.0, y = target_data_default-7.5, label = str_c(as.character(target_data_default), "% Target"), fontface=2) +
+  geom_hline(yintercept = target_data_default, linetype = "dashed", show.legend = F) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        strip.text.y = element_text(size = 8))
+```
+
+## Caveats 
+
+*This assessment was completed on `r date_current_print_report` and is current as of this date.
+
+*Note that wells where data was graded within the last 2 weeks but not yet approved were removed from this analysis.
+
+### Method: 
+All active PGOWN wells publicly available on the <u>[PGOWN Interactive Map](https://governmentofbc.maps.arcgis.com/apps/webappviewer/index.html?id=b53cb0bf3f6848e79d66ffd09b74f00d)</u> are assessed on a region-by-region and provincial basis. The groundwater level data is downloaded for each well and the date of the most recently approved data is noted. For each region, the percent of wells in that region with approved data less than 7 months old is determined.
