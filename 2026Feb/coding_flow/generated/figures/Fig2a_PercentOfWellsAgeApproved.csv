@@ -1,0 +1,12 @@
+"Region","age_approval","count","number_of_wells","percent"
+"Northeast","12 - 24 Months",2,5,40
+"Northeast","7 - 12 Months",1,5,20
+"Northeast","<7 Months",2,5,40
+"Okanagan-Kootenay","<7 Months",5,5,100
+"West Coast","<7 Months",4,4,100
+"Omineca","<7 Months",1,1,100
+"South Coast","<7 Months",1,1,100
+"Thompson-Cariboo","<7 Months",1,1,100
+"Province-wide","12 - 24 Months",2,17,11.7647058823529
+"Province-wide","7 - 12 Months",1,17,5.88235294117647
+"Province-wide","<7 Months",14,17,82.3529411764706

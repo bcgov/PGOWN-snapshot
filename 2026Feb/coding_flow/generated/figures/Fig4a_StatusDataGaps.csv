@@ -1,0 +1,18 @@
+"Region","gap_type","no.wells","well.per.reg","percent"
+"Northeast","54 - 81 Days",1,11,9.09090909090909
+"Northeast","< 27 Days",9,11,81.8181818181818
+"Northeast","> 81 Days",1,11,9.09090909090909
+"Okanagan-Kootenay","< 27 Days",50,52,96.1538461538462
+"Okanagan-Kootenay","> 81 Days",2,52,3.84615384615385
+"Omineca","< 27 Days",6,6,100
+"Skeena","< 27 Days",6,6,100
+"South Coast","< 27 Days",59,59,100
+"Thompson-Cariboo","< 27 Days",21,23,91.304347826087
+"Thompson-Cariboo","> 81 Days",2,23,8.69565217391304
+"West Coast","27 - 54 Days",1,83,1.20481927710843
+"West Coast","< 27 Days",80,83,96.3855421686747
+"West Coast","> 81 Days",2,83,2.40963855421687
+"Province-wide","27 - 54 Days",1,240,0.416666666666667
+"Province-wide","54 - 81 Days",1,240,0.416666666666667
+"Province-wide","< 27 Days",231,240,96.25
+"Province-wide","> 81 Days",7,240,2.91666666666667

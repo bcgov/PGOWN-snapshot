@@ -1,0 +1,10 @@
+"Region","type","count.by.region.type","well.per.reg","percent"
+"Northeast","Data has been approved and graded",3,5,60
+"Northeast","Issues exist with grading or approval",2,5,40
+"Okanagan-Kootenay","Data has been approved and graded",5,5,100
+"Omineca","Data has been approved and graded",1,1,100
+"South Coast","Data has been approved and graded",1,1,100
+"Thompson-Cariboo","Issues exist with grading or approval",1,1,100
+"West Coast","Issues exist with grading or approval",4,4,100
+"Province-wide","Issues exist with grading or approval",7,17,41.1764705882353
+"Province-wide","Data has been approved and graded",10,17,58.8235294117647
