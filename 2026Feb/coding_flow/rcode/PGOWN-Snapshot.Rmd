@@ -56,6 +56,7 @@ library(jsonlite)
 
 #have to save .Renviron in the home directory where the project is placed; not the working dir
 readRenviron(".Renviron")
+
 parameters <- read_yaml("report_parameter_list.yaml")
 
 #knitr::opts_knit$set(root.dir = str_c(here::here(), Sys.getenv("report_folder")))
@@ -173,6 +174,9 @@ date_previous_print_report <- format(date_previous, format = "%b %d, %Y")
 date_data_gap_start_print <- format(date_data_gap_start, format = "%b %d, %Y")
 date_data_gap_end_print <- format(date_data_gap_end, format = "%b %d, %Y")
 
+#set reporting date, age of approved data will be calculated against this
+ReportDate <- as.POSIXct(date_current)
+
 #running through well data to calculate age of approval/grading
 #Run this script to get a csv file with the dates of last data approval and grade.
 #Number of months since data was last approved or graded was also calculated.
@@ -207,7 +211,13 @@ for (i in seq(1, nrow(all_sgwl))) {
 
   #Select only what we need and only the most recent approval as this is the one we calculate the age against
   Approvals <- DataCorrections$Approvals %>% filter(LevelDescription == "Approved") %>% select(c(DateAppliedUtc, User, LevelDescription, EndTime))
-  Grades <- DataCorrections$Grades %>% filter(!(GradeCode %in% c(0, -1)))
+  Approvals$EndTime <- as.POSIXct(Approvals$EndTime, format = "%Y-%m-%dT%H:%M:%S")
+  Approvals <- Approvals %>% dplyr::filter(EndTime <= (ReportDate - as.difftime(1, units = "days")))
+  Grades <- DataCorrections$Grades %>% filter(!(GradeCode %in% c(0, -1))) 
+  Grades$EndTime <- as.POSIXct(Grades$EndTime, format = "%Y-%m-%dT%H:%M:%S")
+  Grades <- Grades %>% dplyr::filter(EndTime <= (ReportDate - as.difftime(1, units = "days")))
+  
+  DateOfLastGrade <- max(Grades$EndTime)
 
   #Only one record should be found but for wells with no approved data they will have 0 rows so need to be replaced somehow with an eqv report with addn info on location of well and date of last grade
   if (nrow(Approvals) == 0){
@@ -216,9 +226,7 @@ for (i in seq(1, nrow(all_sgwl))) {
     Approvals$LastGrade <- DateOfLastGrade
   }
 
-  Approvals <- Approvals[Approvals$EndTime == max(Approvals$EndTime), ]
-
-  DateOfLastGrade <- max(Grades$EndTime)
+    Approvals <- Approvals[Approvals$EndTime == max(Approvals$EndTime), ]
 
   #Only one record should be found in general but addn info about it needs to be added
   if (nrow(Approvals) == 1) {
@@ -235,10 +243,8 @@ for (i in seq(1, nrow(all_sgwl))) {
 #end for loop
 }
 
-#set reporting date, age of approved data will be calculated against this
-ReportDate <- as.POSIXct(date_current)
-
-all_approval_dat$EndTime <- as.POSIXct(all_approval_dat$EndTime, format = "%Y-%m-%dT%H:%M:%S")
+#all_approval_dat$EndTime <- as.POSIXct(all_approval_dat$EndTime, format = "%Y-%m-%dT%H:%M:%S")
+#all_approval_dat <- all_approval_dat %>% dplyr::filter(EndTime <= (ReportDate - as.difftime(1, units = "days")))
 all_approval_dat$LastGrade <- as.POSIXct(all_approval_dat$LastGrade)
 all_approval_dat$AgeApprovedDat_Months <- round(time_length(ReportDate - all_approval_dat$EndTime, unit = "month"),1)
 all_approval_dat$AgeGradeDat_Months <- round(time_length(ReportDate - all_approval_dat$LastGrade, unit = "month"),1)
@@ -323,13 +329,12 @@ write.csv(number_of_active_wells, file = str_c(".", report_folder, "/coding_flow
 
 ```{r API Client for Carmen files - 1, include = FALSE, echo= FALSE, fig.align="left", fig.height=4.5, fig.width = 7}
 #–– 2. Define report-date parameters
-report_date      <- format(ReportDate, "%Y-%m")
-report_date_spec <- ymd_hms(paste0(report_date, "-01 00:00:00"), tz = "UTC")
-
-date_cutoff_grade <- report_date_spec %m-% months(7)
-date_abs_min      <- report_date_spec %m-% months(13)
-date_gap_max      <- (report_date_spec %m-% months(7)) - days(1)
-
+# report_date      <- format(ReportDate, "%Y-%m")
+# report_date_spec <- ymd_hms(paste0(report_date, "-01 00:00:00"), tz = "UTC")
+# 
+# date_cutoff_grade <- report_date_spec %m-% months(7)
+# date_abs_min      <- report_date_spec %m-% months(13)
+# date_gap_max      <- (report_date_spec %m-% months(7)) - days(1)
 
 #–– 3. Connect to API via Python client
 base_url = Sys.getenv("base_url")
@@ -387,7 +392,8 @@ for (uid in unique_ids) {
   print(df_ts_filt$LocationIdentifier[df_ts_filt$UniqueId == uid][1])
   qry <- paste0(
     ts_data_url, "?TimeSeriesUniqueIds=", uid, "&QueryFrom=",
-    format(date_abs_min, "%Y-%m-%d")
+    #format(date_abs_min, "%Y-%m-%d")
+    format(as.POSIXct(date_data_gap_start), "%Y-%m-%d")
   )
   
   r   <- GET(qry)
@@ -417,7 +423,8 @@ df_recent_year
 #–– 9. Grade-cutoff filtering and export
 df_grade <- df_recent_year %>% 
   select(ObsWell, Timestamp, NumericValue1, GradeName1, ApprovalName1) %>% 
-  filter(Timestamp >= date_cutoff_grade)
+  #filter(Timestamp >= date_cutoff_grade)
+  filter(Timestamp >= as.POSIXct(date_data_gap_end))
 
 df_grade
 
@@ -428,12 +435,21 @@ write_csv(df_grade %>% left_join(well_lookup, by = c("ObsWell" = "Well_Name")), 
 #–– 10. Gap-analysis over the 7-to-13-month window
 df_gap <- df_recent_year %>% 
   arrange(ObsWell, Timestamp) %>% 
-  filter(Timestamp >= date_abs_min) %>% 
+  #mutate(Timestamp = as.Date(Timestamp, format = "%Y-%m-%d")) %>% 
+  #filter(Timestamp >= date_abs_min) %>% 
+  filter(Timestamp >= as.POSIXct(date_data_gap_start)) %>% 
   group_by(ObsWell) %>% 
   mutate(gap = Timestamp - lag(Timestamp)) %>% 
   ungroup()
 
 df_gap
+
+class(df_gap$gap)
+class(df_gap$Timestamp)
+class(date_data_gap_start)
+class(date_data_gap_end)
+class(date_abs_min)
+class(date_gap_max)
 
 obswell_list     <- unique(df_gap$ObsWell)
 df_gap_complete <- tibble(
@@ -450,6 +466,7 @@ df_gap_complete <- tibble(
 # adjust first and last gaps
 for (obs in obswell_list) {
   global_min <- (df_ts_filt %>% filter(LocationIdentifier == obs))$CorrectedStartTime[1]
+  #global_min <- as.POSIXct(global_min)
   print(obs)
   print(global_min)
   df_gap_tmp <- df_gap %>% 
@@ -460,8 +477,10 @@ for (obs in obswell_list) {
     ) %>% 
     mutate(
       gap = case_when(
-        is_first & min(Timestamp) > date_abs_min & global_min <= date_abs_min ~ (min(Timestamp) - date_abs_min),
-        is_last  & max(Timestamp) < date_gap_max  ~ (date_gap_max - max(Timestamp)),
+        #is_first & min(Timestamp) > date_abs_min & global_min <= date_abs_min ~ (min(Timestamp) - date_abs_min),
+        #is_last  & max(Timestamp) < date_gap_max  ~ (date_gap_max - max(Timestamp)),
+        is_first & min(Timestamp) > as.POSIXct(date_data_gap_start) & global_min <= as.POSIXct(date_data_gap_start) ~ ((min(Timestamp)) - as.POSIXct(date_data_gap_start)),
+        is_last  & max(Timestamp) < as.POSIXct(date_data_gap_end)  ~ (as.POSIXct(date_data_gap_end) - (max(Timestamp))),
         TRUE                                     ~ gap
       )
     )
@@ -477,7 +496,8 @@ df_gap_complete <- df_gap_complete %>%
   )
 
 df_gap_complete %>% 
-  filter(Timestamp <= date_gap_max) %>% 
+  #filter(Timestamp <= date_gap_max) %>% 
+  filter(Timestamp <= date_data_gap_end) %>% 
   group_by(ObsWell) %>% 
   summarize(GapHours = sum(GapHours, na.rm = TRUE)) %>% 
   ungroup() %>% 
@@ -493,7 +513,7 @@ df_sgwl <- df_ts_filt %>%
   filter(!is.na(CorrectedStartTime)) %>% 
   mutate(
     CorrectedEndTime = with_tz(ymd_hms(CorrectedEndTime), tzone = "UTC"),
-    LatestIngest_hr  = round(as.numeric(difftime(.POSIXct(Sys.time(), "UTC"), CorrectedEndTime, units = "hours")),digits = 0)
+    LatestIngest_hr  = round(as.numeric(difftime(ReportDate, CorrectedEndTime, units = "hours")),digits = 0)
   ) %>% 
   select(LocationIdentifier, LatestIngest_hr) %>% 
   left_join(well_lookup, by = c("LocationIdentifier" = "Well_Name"))
@@ -508,6 +528,7 @@ write_csv(df_sgwl, str_c(".", report_folder, "/coding_flow/data/data_rc/", "PGOW
 #read the numer of wells by telemetry type
 #read the numer of wells by telemetry type
 #Q:? identifier?
+
 tel_stats <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_rc/ow_telem.csv"))
 tel_stats <- merge(well_lookup, tel_stats, by.x = 'Well_Name', by.y = 'Identifier', all.x = T, all.y = F)
 
@@ -543,6 +564,7 @@ The West Coast Region has had a full-time, dedicated Groundwater Technician sinc
 ### Data Approval and Well Performance
 #time since last approval
 #UPDATE 20260108 Filter out wells that have not been approved or that have not been approved after grading (margin of +/- 1 day)
+
 well_approval <- read.csv(file = str_c(".", report_folder, "/coding_flow/data/data_new/well_snapshot.csv"), stringsAsFactors = F) %>% select("ObsWell", "AgeApprovedDat_Months", "AgeGradeDat_Months", "AgeApprovedDat_Days", "AgeGradeDat_Days") %>% 
   dplyr::filter(!is.na(AgeApprovedDat_Months)) %>% 
   dplyr::filter(AgeApprovedDat_Days > (AgeGradeDat_Days-1)) %>% 
@@ -636,7 +658,6 @@ write.csv(well_approval, file = str_c(".", report_folder, "/coding_flow/generate
 
 ```{r Region Consecutive Snapshot Approval Only Comparison plot, include = TRUE, echo= FALSE, fig.align="left", fig.height=4.8, fig.width = 7.6}
 #read in historical performance on the 7 month validation target
-
 
 past_per <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_old/well_stats.csv"), stringsAsFactors = F) %>% 
   mutate(Region = ifelse(Region == "North East", "Northeast", Region))
@@ -841,6 +862,7 @@ Please note that there is a 2% tolerance applied to the calculation of this metr
 
 #data gaps
 #Q:? identifier?
+
 data_gaps <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_rc/PGOWN_Gap_Hours.csv"), stringsAsFactors = F)
 
 data_gaps <- merge(data_gaps, well_lookup, by.x = "ObsWell", by.y = "Well_Name", all.x = F, all.y = T) %>% dplyr::select(-Region.x) %>% rename(Region = Region.y) 
