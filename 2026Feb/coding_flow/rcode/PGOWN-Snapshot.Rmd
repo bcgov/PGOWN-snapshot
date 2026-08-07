@@ -57,6 +57,8 @@ library(jsonlite)
 #have to save .Renviron in the home directory where the project is placed; not the working dir
 readRenviron(".Renviron")
 
+#setwd("~/OneDrive - Government of BC/teamdocs/GitHub/PGOWN_20260805")
+
 parameters <- read_yaml("report_parameter_list.yaml")
 
 #knitr::opts_knit$set(root.dir = str_c(here::here(), Sys.getenv("report_folder")))
@@ -260,6 +262,8 @@ all_approval_dat <- all_approval_dat %>% dplyr::select(ObsWell, User, LevelDescr
 
 #https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
 
+#setwd("~/OneDrive - Government of BC/teamdocs/GitHub/PGOWN_20260805")
+
 write.csv(all_approval_dat, file = str_c(".", report_folder, "/coding_flow/data/data_new/well_snapshot.csv"), row.names = FALSE)
 ```
 
@@ -269,6 +273,7 @@ write.csv(all_approval_dat, file = str_c(".", report_folder, "/coding_flow/data/
 ```{r provincial plots, include = TRUE, echo= FALSE, fig.align="left", fig.height=4.5, fig.width = 7}
 
 #getwd()
+#setwd("~/OneDrive - Government of BC/teamdocs/GitHub/PGOWN_20260805")
 
 #bringing in jb's teams' latest file on list of wells
 #Q:? identifier?
@@ -375,6 +380,8 @@ df_loc_to_exp <- df_loc %>%
 
 df_loc_to_exp
 
+#setwd("~/OneDrive - Government of BC/teamdocs/GitHub/PGOWN_20260805")
+
 write_csv(df_loc_to_exp %>% select(Identifier, DataSource), str_c(".", report_folder, "/coding_flow/data/data_rc/ow_telem.csv"))
 
 #–– 8. Retrieve last 13 months of data for each unique series
@@ -420,6 +427,8 @@ df_recent_year
 ```
 ```{r API Client for Carmen files - 2, include = FALSE, echo= FALSE, fig.align="left", fig.height=4.5, fig.width = 7}
 
+#setwd("~/OneDrive - Government of BC/teamdocs/GitHub/PGOWN_20260805")
+
 #–– 9. Grade-cutoff filtering and export
 df_grade <- df_recent_year %>% 
   select(ObsWell, Timestamp, NumericValue1, GradeName1, ApprovalName1) %>% 
@@ -448,8 +457,8 @@ class(df_gap$gap)
 class(df_gap$Timestamp)
 class(date_data_gap_start)
 class(date_data_gap_end)
-class(date_abs_min)
-class(date_gap_max)
+#class(date_abs_min)
+#class(date_gap_max)
 
 obswell_list     <- unique(df_gap$ObsWell)
 df_gap_complete <- tibble(
@@ -529,6 +538,8 @@ write_csv(df_sgwl, str_c(".", report_folder, "/coding_flow/data/data_rc/", "PGOW
 #read the numer of wells by telemetry type
 #Q:? identifier?
 
+#setwd("~/OneDrive - Government of BC/teamdocs/GitHub/PGOWN_20260805")
+
 tel_stats <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_rc/ow_telem.csv"))
 tel_stats <- merge(well_lookup, tel_stats, by.x = 'Well_Name', by.y = 'Identifier', all.x = T, all.y = F)
 
@@ -564,6 +575,8 @@ The West Coast Region has had a full-time, dedicated Groundwater Technician sinc
 ### Data Approval and Well Performance
 #time since last approval
 #UPDATE 20260108 Filter out wells that have not been approved or that have not been approved after grading (margin of +/- 1 day)
+
+#setwd("~/OneDrive - Government of BC/teamdocs/GitHub/PGOWN_20260805")
 
 well_approval <- read.csv(file = str_c(".", report_folder, "/coding_flow/data/data_new/well_snapshot.csv"), stringsAsFactors = F) %>% select("ObsWell", "AgeApprovedDat_Months", "AgeGradeDat_Months", "AgeApprovedDat_Days", "AgeGradeDat_Days") %>% 
   dplyr::filter(!is.na(AgeApprovedDat_Months)) %>% 
@@ -659,6 +672,8 @@ write.csv(well_approval, file = str_c(".", report_folder, "/coding_flow/generate
 ```{r Region Consecutive Snapshot Approval Only Comparison plot, include = TRUE, echo= FALSE, fig.align="left", fig.height=4.8, fig.width = 7.6}
 #read in historical performance on the 7 month validation target
 
+#setwd("~/OneDrive - Government of BC/teamdocs/GitHub/PGOWN_20260805")
+
 past_per <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_old/well_stats.csv"), stringsAsFactors = F) %>% 
   mutate(Region = ifelse(Region == "North East", "Northeast", Region))
 
@@ -723,6 +738,8 @@ ggsave(str_c(".", report_folder, "/coding_flow/generated/figures/Fig2b_Consecuti
 
 
 ```{r graded and approved plot, include = TRUE, echo= FALSE, fig.align="left" , fig.height=4.5, fig.width = 8.5 }
+
+#setwd("~/OneDrive - Government of BC/teamdocs/GitHub/PGOWN_20260805")
 
 #Q:? identifier?
 grading_dat <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_rc/PGOWN_Grades_Appr.csv"), stringsAsFactors = F)
@@ -799,6 +816,7 @@ write.csv(grading_dat_summary, file = str_c(".", report_folder, "/coding_flow/ge
 
 ```{r Region Consecutive Snapshot Approved and Graded Comparison plot, include = TRUE, echo= FALSE, fig.align="left", fig.height=4.8, fig.width = 7.6}
 #read in historical performance on the 7 month validation target
+#setwd("~/OneDrive - Government of BC/teamdocs/GitHub/PGOWN_20260805")
 
 #Take the data underlying the old figures and use them to create new figures
 #How to make this repeatable?
@@ -806,7 +824,11 @@ write.csv(grading_dat_summary, file = str_c(".", report_folder, "/coding_flow/ge
 grading_dat_old <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_old/", "Fig3a_StatusGradingApproval.csv")) %>% 
   dplyr::filter(type == "Data has been approved and graded") %>% 
   dplyr::select(c(Region, percent)) %>% 
-  mutate(Region = ifelse(Region == "North East", "Northeast", Region))
+  mutate(Region = ifelse(Region == "North East", "Northeast", Region)) %>%
+  mutate(
+    Region = factor(Region, levels = c("Province-wide", tel_stats$Region))
+  ) %>%
+  complete(Region, fill = list(percent = 0))
 
 grading_dat_merged <- grading_dat_summary %>% 
   dplyr::filter(type == "Data has been approved and graded") %>% 
@@ -862,6 +884,7 @@ Please note that there is a 2% tolerance applied to the calculation of this metr
 
 #data gaps
 #Q:? identifier?
+#setwd("~/OneDrive - Government of BC/teamdocs/GitHub/PGOWN_20260805")
 
 data_gaps <- read.csv(str_c(".", report_folder, "/coding_flow/data/data_rc/PGOWN_Gap_Hours.csv"), stringsAsFactors = F)
 
