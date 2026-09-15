@@ -8,12 +8,12 @@ ui <- fluidPage(
   titlePanel("PGOWN Report Generator"),
   sidebarLayout(
     sidebarPanel(
-      textInput("report_folder", "Name of new report folder:", value = "/2026Jan"),
-      textInput("snapshot_name", "Name of new snapshot:", value = "Jan 2026"),
-      textInput("date_of_current_report", "Date analysis is being conducted:", value = "2026-01-08"),
-      textInput("date_of_previous_report", "Date analysis was last conducted:", value = "2025-08-08"),
-      textInput("date_of_data_gap_start", "Starting date to study data gaps:", value = "2025-01-01"),
-      textInput("date_of_data_gap_end", "Ending date to study data gaps:", value = "2025-06-30"),
+      textInput("report_folder", "Name of new report folder:", value = "2026Aug"),
+      textInput("snapshot_name", "Name of new snapshot:", value = "Aug 2026"),
+      textInput("date_of_current_report", "Date analysis is being conducted:", value = "2026-08-05"),
+      textInput("date_of_previous_report", "Date analysis was last conducted:", value = "2026-02-04"),
+      textInput("date_of_data_gap_start", "Starting date to study data gaps:", value = "2025-07-01"),
+      textInput("date_of_data_gap_end", "Ending date to study data gaps:", value = "2025-12-31"),
       textInput("target_data_default", "General data performance target:", value = "90"),
       textInput("target_data_approval", "Data approval target:", value = "90"),
       textInput("target_data_approval_year", "Year data approval target was set:", value = "2024"),
@@ -53,13 +53,32 @@ server <- function(input, output, session) {
     )
 
     # Save parameters to YAML file
-    report_parameter_list_file <- "report_parameter_list.yaml"
+    #report_parameter_list_file <- str_c(here(), input$report_folder, "/report_parameter_list.yaml") 
+    #report_parameter_list_file <- "report_parameter_list.yaml"
+    
+    report_dir <- file.path(here(), input$report_folder)
+    
+    report_parameter_list_file <- file.path(
+      report_dir,
+      "report_parameter_list.yaml"
+    )
+    
     write_yaml(report_parameter_list, report_parameter_list_file)
 
     # Render RMarkdown file with parameters
-    output_file <- str_c(here(), input$report_folder, "/PGOWN-Snapshot.html")
-    render(str_c(here(), input$report_folder, "/coding_flow/rcode/PGOWN-Snapshot.Rmd"), output_format = "html_document", output_file = output_file, params = list(set_subtitle = str_c("Snapshot Report: ", report_parameter_list$snapshot_name)), envir = new.env(parent = globalenv()), knit_root_dir = here())
+    output_file <- file.path(here(), input$report_folder, "PGOWN-Snapshot.html")
+    #output_file <- str_c(here(), input$report_folder, "/PGOWN-Snapshot.html")
 
+    print(getwd())
+    print(list.files(recursive = TRUE))
+
+    #render(str_c(here(), input$report_folder, "/coding_flow/rcode/PGOWN-Snapshot.Rmd"), output_format = "html_document", output_file = output_file, params = list(set_subtitle = str_c("Snapshot Report: ", report_parameter_list$snapshot_name)), envir = new.env(parent = globalenv()), knit_root_dir = here())
+    render(file.path(here(), input$report_folder, "coding_flow", "rcode", "PGOWN-Snapshot.Rmd"), 
+           output_format = "html_document", output_file = output_file, 
+           params = list(set_subtitle = str_c("Snapshot Report: ", 
+           report_parameter_list$snapshot_name), 
+           yaml_file = report_parameter_list_file), envir = new.env(parent = globalenv()), knit_root_dir = here())
+    
     stopApp()
   })
 }

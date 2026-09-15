@@ -1,0 +1,17 @@
+"Region","type","count.by.region.type","well.per.reg","percent"
+"Northeast","Issues exist with grading or approval",7,11,63.6363636363636
+"Northeast","No data has been appended in the past 7 months",4,11,36.3636363636364
+"Okanagan-Kootenay","Data has been approved and graded",34,35,97.1428571428571
+"Okanagan-Kootenay","Issues exist with grading or approval",1,35,2.85714285714286
+"Omineca","Data has been approved and graded",6,6,100
+"Skeena","Data has been approved and graded",5,6,83.3333333333333
+"Skeena","Issues exist with grading or approval",1,6,16.6666666666667
+"South Coast","Data has been approved and graded",51,56,91.0714285714286
+"South Coast","Issues exist with grading or approval",3,56,5.35714285714286
+"South Coast","No data has been appended in the past 7 months",2,56,3.57142857142857
+"Thompson-Cariboo","Data has been approved and graded",23,23,100
+"West Coast","Data has been approved and graded",75,76,98.6842105263158
+"West Coast","Issues exist with grading or approval",1,76,1.31578947368421
+"Province-wide","No data has been appended in the past 7 months",6,213,2.8169014084507
+"Province-wide","Issues exist with grading or approval",13,213,6.10328638497653
+"Province-wide","Data has been approved and graded",194,213,91.0798122065728
