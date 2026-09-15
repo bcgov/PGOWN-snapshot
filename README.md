@@ -21,17 +21,28 @@ coverage](https://codecov.io/gh/bcgov/bcdata/branch/main/graph/badge.svg)](https
 
 An R Coding pipeline for retrieving & summarizing data for the [Provincial Groundwater Observation Well Network (PGOWN)](https://www2.gov.bc.ca/gov/content?id=B03D0994BB5C4F98B6F7D4FD8610C836) in the [real-time water database](https://www2.gov.bc.ca/gov/content?id=39A675506AE54C4CB240849338B7C8D8) used to prepare bi-annual snapshots of the network and its performance. This reporting tool and data pipeline is maintained by the Data Management unit of the LSDMR section (EMAB branch of the EPD division) in the Ministry of Env and Parks, Govt. of British Columbia.
 
+To use this coding pipeline, you should have already installed R and RStudio/Positron as the IDE to run the scripts.
+
 ### Code structure
 
-The coding flow has three streams of data input/output. 
+A parent project folder needs to be created that contains the following 2 files:
 
-data: contains reference data (CSV files) needed to run the scripts (data_jb, data_rc, data_old) that need to be updated for each snapshot, and a folder for storing new data (data_new) generated on running this script. Note: the CSV files CANNOT be replaced by Excel files. If you use Excel, please use the "Save as..." option to generate the necessary CSV files.
+1. .Renviron file contains credentials needed to link to the AQS system
+2. app.R file that runs the Shiny app
+3. The other item that needs to be set up is the folder storing files for each PGOWN Report run (e.g., a folder called 2026Aug for the August 2026 PGOWN Report). This folder itself contains 3 items:
 
-generated: contains a copy of the figures and tables generated on running this script as well as their underlying data.
+First, a YAML parameters list that can be updated before any run or updated through the Shiny App.
+Second, the final output file, an HTML report called PGOWN-Snapshot, will also show up in this folder.
 
-rcode: contains the R Markdown file that needs to be run to generate the output report "PGOWN-Snapshot.html". Also contains the script for API calls to the AQUARIUS database as well as an .Renviron that needs to be updated for each snapshot. Because the script pulls data from the production version of the database, it does take several minutes to complete. 
+Third, a subfolder called "coding flow". This folder has three streams of data input/output. Of these, only information in the "data" subfolder needs to be updated before running each snapshot. 
 
-**Note:** The `pgown-snapshot` coding pipeline uses data from the AQUARIUS Time-Series API Client, utilizing the timeseries_client.R file written and maintained by [Aquatic Informatics](https://github.com/AquaticInformatics) which can be found in their repo [here](https://github.com/AquaticInformatics/examples/blob/fa417675042ea1f1d08358f2c42244e7c4baac23/TimeSeries/PublicApis/R/timeseries_client.R). Data on the AQTS server is password protected. If you do not have verified and functional credentials, you will not be able to use this coding pipeline. If you have credentials, update them in the .Renviron file in the folder rcode. Currently they are set to test values and will not work. If you have credentials but encounter errors in running this code, please file an
+I. a subfolder called "data": contains reference data (CSV files) needed to run the scripts (data_jb, data_rc, data_old) that need to be updated for each snapshot, and a folder for storing new data (data_new) generated on running this script. Note: the CSV files CANNOT be replaced by Excel files. If you use Excel, please use the "Save as..." option to generate the necessary CSV files.
+
+II. a subfolder called "generated": contains a copy of the figures and tables generated on running this script as well as their underlying data.
+
+III. a subfolder called rcode: contains the R Markdown file that is run by the Shiny app to generate the output report. Also contains the script for API calls to the AQUARIUS database. Because the script pulls data from the production version of the database, it does take several minutes to complete. 
+
+**Note:** The `pgown-snapshot` coding pipeline uses data from the AQUARIUS Time-Series API Client, utilizing the timeseries_client.R file written and maintained by [Aquatic Informatics](https://github.com/AquaticInformatics) which can be found in their repo [here](https://github.com/AquaticInformatics/examples/blob/fa417675042ea1f1d08358f2c42244e7c4baac23/TimeSeries/PublicApis/R/timeseries_client.R). Data on the AQTS server is password protected. If you do not have verified and functional credentials, you will not be able to use this coding pipeline. If you have credentials, update them in the .Renviron file in the parent folder. Currently they are set to test values and will not work. If you have credentials but encounter errors in running this code, please file an
 [issue](https://github.com/bcgov/PGOWN-snapshot/issues/).
 
 ### Installation
